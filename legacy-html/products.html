@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products | InventoryPro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+    
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header" style="padding: 1.25rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-light);">
+                <div class="icon-box icon-box-md" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600)); flex-shrink: 0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                </div>
+                <span class="sidebar-logo-text font-bold text-lg" style="color: var(--text-primary);">InventoryPro</span>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto no-scrollbar" style="padding: 0.75rem;">
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 0.75rem 1rem 0.5rem;">Main</div>
+                <a href="index.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span class="sidebar-text">Dashboard</span></a>
+                <a href="products.html" class="sidebar-link active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span class="sidebar-text">Products</span></a>
+                <a href="suppliers.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="sidebar-text">Suppliers</span></a>
+                <a href="inventory.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg><span class="sidebar-text">Inventory</span></a>
+                
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 1.5rem 1rem 0.5rem;">Analytics</div>
+                <a href="transactions.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/></svg><span class="sidebar-text">Transactions</span></a>
+                <a href="reports.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span class="sidebar-text">Reports</span></a>
+                
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 1.5rem 1rem 0.5rem;">System</div>
+                <a href="settings.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sidebar-text">Settings</span></a>
+                <a href="admin.html" class="sidebar-link" data-admin-only style="display: none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="sidebar-text">Admin Panel</span></a>
+            </nav>
+
+            <div style="padding: 1rem; border-top: 1px solid var(--border-light);">
+                <button id="sidebarToggle" class="sidebar-link" style="width: 100%;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+                    <span class="sidebar-text">Collapse</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="flex items-center gap-4">
+                    <button onclick="openMobileSidebar()" class="lg:hidden btn btn-ghost p-2" style="color: var(--text-secondary);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+                    <div>
+                        <h2 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">Products</h2>
+                        <p style="font-size: 0.75rem; color: var(--text-tertiary);">Manage your product inventory</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="add-product.html" class="btn btn-primary btn-sm btn-press">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span class="hidden sm:inline">Add Product</span>
+                    </a>
+                    <button id="themeToggle" class="btn btn-ghost btn-sm btn-press" data-tooltip="Toggle Theme">
+                        <svg id="lightIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                        <svg id="darkIcon" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    </button>
+                    <div class="relative">
+                        <button id="userMenuBtn" class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl transition-all" style="border: 1px solid var(--border-light); background: var(--bg-card);" data-dropdown="userDropdown">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));"><span data-user-name>U</span></div>
+                        </button>
+                        <div id="userDropdown" class="dropdown-menu hidden absolute right-0 top-full mt-2" style="min-width: 180px; z-index: var(--z-dropdown);">
+                            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-light);"><p class="text-sm font-semibold" data-user-name>User</p></div>
+                            <a href="settings.html" class="dropdown-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>Settings</a>
+                            <div style="border-top: 1px solid var(--border-light);"><button id="logoutBtn" class="dropdown-item danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Logout</button></div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area page-fade-in">
+                <div class="page-header">
+                    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                        <div>
+                            <h1>Products</h1>
+                            <p>Manage and track all your inventory products</p>
+                        </div>
+                        <div class="text-sm" style="color: var(--text-tertiary);">
+                            Total: <span id="totalCount" class="font-semibold" style="color: var(--text-primary);">0</span> products
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters Bar -->
+                <div class="app-card p-4 mb-6">
+                    <div class="flex flex-col lg:flex-row gap-3">
+                        <!-- Search -->
+                        <div class="flex-1 relative">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="absolute left-3 top-1/2 -translate-y-1/2" style="color: var(--text-tertiary);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="searchInput" placeholder="Search by name, SKU, or description..." class="form-input search-glow w-full" style="padding-left: 2.5rem;">
+                        </div>
+                        
+                        <!-- Category Filter -->
+                        <select id="categoryFilter" class="form-select" style="min-width: 160px;">
+                            <option value="">All Categories</option>
+                        </select>
+
+                        <!-- Status Filter -->
+                        <select id="statusFilter" class="form-select" style="min-width: 140px;">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="discontinued">Discontinued</option>
+                        </select>
+
+                        <!-- Sort -->
+                        <select id="sortBy" class="form-select" style="min-width: 150px;">
+                            <option value="created_at:desc">Newest First</option>
+                            <option value="created_at:asc">Oldest First</option>
+                            <option value="name:asc">Name A-Z</option>
+                            <option value="name:desc">Name Z-A</option>
+                            <option value="quantity:asc">Quantity Low-High</option>
+                            <option value="quantity:desc">Quantity High-Low</option>
+                            <option value="unit_price:asc">Price Low-High</option>
+                            <option value="unit_price:desc">Price High-Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div class="app-card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="data-table w-full">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>SKU</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <!-- Loading state -->
+                                <tr><td colspan="7"><div class="skeleton" style="height: 200px; border-radius: 0;"></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyState" class="hidden">
+                        <div class="empty-state">
+                            <div class="empty-state-icon empty-float">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                            </div>
+                            <h3>No products found</h3>
+                            <p>Get started by adding your first product to the inventory.</p>
+                            <a href="add-product.html" class="btn btn-primary mt-2">Add Product</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between p-4" style="border-top: 1px solid var(--border-light);">
+                        <span class="text-sm" style="color: var(--text-tertiary);">Showing <span id="showingStart">0</span>-<span id="showingEnd">0</span> of <span id="showingTotal">0</span></span>
+                        <div class="pagination" id="pagination"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container"></div>
+
+    <script type="module">
+        import { supabase } from './js/supabase.js';
+        import { requireAuth, logout } from './js/auth.js';
+        import { initAnimations } from './js/animations.js';
+
+        await requireAuth();
+        initAnimations();
+        setPageTitle('Products');
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        // State
+        let allProducts = [];
+        let categories = [];
+        let currentPage = 1;
+        const perPage = 10;
+
+        // Fetch categories for filter
+        async function fetchCategories() {
+            const { data, error } = await supabase.from('categories').select('id, name').order('name');
+            if (!error && data) {
+                categories = data;
+                const select = document.getElementById('categoryFilter');
+                data.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat.id;
+                    option.textContent = cat.name;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        // Fetch products
+        async function fetchProducts() {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*, categories(name, color), suppliers(name)')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allProducts = data || [];
+                document.getElementById('totalCount').textContent = allProducts.length;
+                applyFilters();
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                showToast('Error loading products', 'error');
+            }
+        }
+
+        // Apply filters and render
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase().trim();
+            const categoryId = document.getElementById('categoryFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const sortValue = document.getElementById('sortBy').value;
+
+            let filtered = [...allProducts];
+
+            // Search filter
+            if (search) {
+                filtered = filtered.filter(p => 
+                    (p.name && p.name.toLowerCase().includes(search)) ||
+                    (p.sku && p.sku.toLowerCase().includes(search)) ||
+                    (p.description && p.description.toLowerCase().includes(search))
+                );
+            }
+
+            // Category filter
+            if (categoryId) {
+                filtered = filtered.filter(p => p.category_id === categoryId);
+            }
+
+            // Status filter
+            if (status) {
+                filtered = filtered.filter(p => p.status === status);
+            }
+
+            // Sort
+            const [sortCol, sortDir] = sortValue.split(':');
+            filtered.sort((a, b) => {
+                let valA = a[sortCol] || '';
+                let valB = b[sortCol] || '';
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable(filtered);
+        }
+
+        // Render table
+        function renderTable(products) {
+            const tbody = document.getElementById('productsTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const tableContainer = tbody.closest('.overflow-x-auto');
+
+            if (products.length === 0) {
+                tbody.innerHTML = '';
+                tableContainer.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                document.getElementById('showingStart').textContent = '0';
+                document.getElementById('showingEnd').textContent = '0';
+                document.getElementById('showingTotal').textContent = '0';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            tableContainer.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            // Pagination
+            const totalPages = Math.ceil(products.length / perPage);
+            currentPage = Math.min(currentPage, totalPages || 1);
+            const start = (currentPage - 1) * perPage;
+            const end = start + perPage;
+            const pageItems = products.slice(start, end);
+
+            document.getElementById('showingStart').textContent = start + 1;
+            document.getElementById('showingEnd').textContent = Math.min(end, products.length);
+            document.getElementById('showingTotal').textContent = products.length;
+
+            renderPagination(totalPages, currentPage);
+
+            tbody.innerHTML = pageItems.map((product, index) => {
+                const stockStatus = product.quantity === 0 ? 'out_of_stock' : 
+                                   product.quantity <= product.min_stock_level ? 'low_stock' : 'in_stock';
+                const statusConfig = {
+                    in_stock: { label: 'In Stock', class: 'status-in_stock' },
+                    low_stock: { label: 'Low Stock', class: 'status-low_stock' },
+                    out_of_stock: { label: 'Out of Stock', class: 'status-out_of_stock' }
+                };
+                const sc = statusConfig[stockStatus];
+
+                const catColor = product.categories?.color || '#6B7280';
+                const catName = product.categories?.name || 'Uncategorized';
+
+                return `
+                    <tr class="table-row-hover" style="animation: cardStagger 0.3s ease-out ${index * 0.05}s both;">
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="img-container" style="width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;">
+                                    ${product.image_url 
+                                        ? `<img src="${product.image_url}" alt="${escapeHtml(product.name)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">` 
+                                        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--text-tertiary);"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`
+                                    }
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-medium text-sm truncate" style="color: var(--text-primary);">${escapeHtml(product.name)}</p>
+                                    ${product.suppliers?.name ? `<p class="text-xs" style="color: var(--text-tertiary);">${escapeHtml(product.suppliers.name)}</p>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td><code class="text-xs px-2 py-1 rounded-md font-medium" style="background: var(--bg-hover); color: var(--text-secondary);">${escapeHtml(product.sku)}</code></td>
+                        <td><span class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full" style="background: ${catColor}20; color: ${catColor};"><span class="w-1.5 h-1.5 rounded-full" style="background: ${catColor};"></span>${escapeHtml(catName)}</span></td>
+                        <td><span class="text-sm font-semibold" style="color: ${product.quantity <= product.min_stock_level ? 'var(--color-danger)' : 'var(--text-primary)'};">${formatNumber(product.quantity)}</span></td>
+                        <td class="text-sm font-medium" style="color: var(--text-primary);">${formatCurrency(product.unit_price)}</td>
+                        <td><span class="text-xs font-medium px-2.5 py-1 rounded-full ${sc.class}">${sc.label}</span></td>
+                        <td>
+                            <div class="flex items-center justify-end gap-1">
+                                <a href="product-details.html?id=${product.id}" class="btn btn-ghost btn-sm btn-press" data-tooltip="View Details">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </a>
+                                <a href="add-product.html?id=${product.id}" class="btn btn-ghost btn-sm btn-press" data-tooltip="Edit">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </a>
+                                <button onclick="deleteProduct('${product.id}', '${escapeHtml(product.name)}')" class="btn btn-ghost btn-sm btn-press" style="color: var(--color-danger);" data-tooltip="Delete">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render pagination
+        function renderPagination(totalPages, current) {
+            const container = document.getElementById('pagination');
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button class="pagination-btn" onclick="changePage(${current - 1})" ${current === 1 ? 'disabled' : ''}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= current - 1 && i <= current + 1)) {
+                    html += `<button class="pagination-btn ${i === current ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                } else if (i === current - 2 || i === current + 2) {
+                    html += `<span class="pagination-btn" style="cursor: default;">...</span>`;
+                }
+            }
+
+            html += `
+                <button class="pagination-btn" onclick="changePage(${current + 1})" ${current === totalPages ? 'disabled' : ''}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        window.changePage = function(page) {
+            currentPage = page;
+            applyFilters();
+        };
+
+        window.deleteProduct = async function(id, name) {
+            showConfirm(
+                `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+                'Delete Product',
+                async () => {
+                    try {
+                        const { error } = await supabase.from('products').delete().eq('id', id);
+                        if (error) throw error;
+                        showToast('Product deleted successfully', 'success');
+                        await fetchProducts();
+                    } catch (error) {
+                        console.error('Error deleting product:', error);
+                        showToast('Error deleting product: ' + error.message, 'error');
+                    }
+                    closeModal();
+                },
+                null,
+                'Delete',
+                'btn-danger'
+            );
+        };
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', debounce(() => {
+            currentPage = 1;
+            applyFilters();
+        }, 300));
+
+        document.getElementById('categoryFilter').addEventListener('change', () => {
+            currentPage = 1;
+            applyFilters();
+        });
+
+        document.getElementById('statusFilter').addEventListener('change', () => {
+            currentPage = 1;
+            applyFilters();
+        });
+
+        document.getElementById('sortBy').addEventListener('change', () => {
+            applyFilters();
+        });
+
+        // Initialize
+        await fetchCategories();
+        await fetchProducts();
+    </script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

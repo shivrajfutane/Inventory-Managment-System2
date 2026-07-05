@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suppliers | InventoryPro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+    
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header" style="padding: 1.25rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-light);">
+                <div class="icon-box icon-box-md" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600)); flex-shrink: 0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                </div>
+                <span class="sidebar-logo-text font-bold text-lg" style="color: var(--text-primary);">InventoryPro</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto no-scrollbar" style="padding: 0.75rem;">
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 0.75rem 1rem 0.5rem;">Main</div>
+                <a href="index.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span class="sidebar-text">Dashboard</span></a>
+                <a href="products.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span class="sidebar-text">Products</span></a>
+                <a href="suppliers.html" class="sidebar-link active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="sidebar-text">Suppliers</span></a>
+                <a href="inventory.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg><span class="sidebar-text">Inventory</span></a>
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 1.5rem 1rem 0.5rem;">Analytics</div>
+                <a href="transactions.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/></svg><span class="sidebar-text">Transactions</span></a>
+                <a href="reports.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span class="sidebar-text">Reports</span></a>
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 1.5rem 1rem 0.5rem;">System</div>
+                <a href="settings.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sidebar-text">Settings</span></a>
+                <a href="admin.html" class="sidebar-link" data-admin-only style="display: none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="sidebar-text">Admin Panel</span></a>
+            </nav>
+            <div style="padding: 1rem; border-top: 1px solid var(--border-light);">
+                <button id="sidebarToggle" class="sidebar-link" style="width: 100%;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg><span class="sidebar-text">Collapse</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="flex items-center gap-4">
+                    <button onclick="openMobileSidebar()" class="lg:hidden btn btn-ghost p-2" style="color: var(--text-secondary);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+                    <div><h2 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">Suppliers</h2><p style="font-size: 0.75rem; color: var(--text-tertiary);">Manage your suppliers</p></div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="showSupplierModal()" class="btn btn-primary btn-sm btn-press"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="hidden sm:inline">Add Supplier</span></button>
+                    <button id="themeToggle" class="btn btn-ghost btn-sm btn-press" data-tooltip="Toggle Theme">
+                        <svg id="lightIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                        <svg id="darkIcon" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    </button>
+                    <div class="relative">
+                        <button id="userMenuBtn" class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl" style="border: 1px solid var(--border-light); background: var(--bg-card);" data-dropdown="userDropdown">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));"><span data-user-name>U</span></div>
+                        </button>
+                        <div id="userDropdown" class="dropdown-menu hidden absolute right-0 top-full mt-2" style="min-width: 180px; z-index: var(--z-dropdown);">
+                            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-light);"><p class="text-sm font-semibold" data-user-name>User</p></div>
+                            <a href="settings.html" class="dropdown-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>Settings</a>
+                            <div style="border-top: 1px solid var(--border-light);"><button id="logoutBtn" class="dropdown-item danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Logout</button></div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area page-fade-in">
+                <div class="page-header">
+                    <h1>Suppliers</h1>
+                    <p>Manage your supplier relationships</p>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="app-card p-4 mb-6">
+                    <div class="relative">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="absolute left-3 top-1/2 -translate-y-1/2" style="color: var(--text-tertiary);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="text" id="searchInput" placeholder="Search suppliers by name, email, phone..." class="form-input search-glow w-full" style="padding-left: 2.5rem;">
+                    </div>
+                </div>
+
+                <!-- Suppliers Grid -->
+                <div id="suppliersGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                    <div class="md:col-span-2 xl:col-span-3"><div class="skeleton" style="height: 200px; border-radius: var(--radius-lg);"></div></div>
+                </div>
+
+                <div id="emptyState" class="hidden">
+                    <div class="empty-state">
+                        <div class="empty-state-icon empty-float">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <h3>No suppliers found</h3>
+                        <p>Add your first supplier to get started.</p>
+                        <button onclick="showSupplierModal()" class="btn btn-primary mt-2">Add Supplier</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container"></div>
+
+    <script type="module">
+        import { supabase } from './js/supabase.js';
+        import { requireAuth, logout } from './js/auth.js';
+        import { initAnimations } from './js/animations.js';
+
+        await requireAuth();
+        initAnimations();
+        setPageTitle('Suppliers');
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        let allSuppliers = [];
+
+        async function fetchSuppliers() {
+            try {
+                const { data, error } = await supabase.from('suppliers').select('*').order('name');
+                if (error) throw error;
+                allSuppliers = data || [];
+                renderSuppliers(allSuppliers);
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error loading suppliers', 'error');
+            }
+        }
+
+        function renderSuppliers(suppliers) {
+            const grid = document.getElementById('suppliersGrid');
+            const empty = document.getElementById('emptyState');
+
+            if (!suppliers.length) { grid.innerHTML = ''; grid.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+            
+            grid.classList.remove('hidden');
+            empty.classList.add('hidden');
+
+            grid.innerHTML = suppliers.map((s, i) => `
+                <div class="app-card p-6 hover-lift card-stagger card-stagger-${(i % 6) + 1}">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="icon-box icon-box-lg" style="background: linear-gradient(135deg, var(--color-primary-100), var(--color-primary-200)); color: var(--color-primary-600);">
+                            <span class="text-lg font-bold">${s.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>
+                        </div>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full ${s.status === 'active' ? 'status-active' : 'status-inactive'}">${capitalizeWords(s.status)}</span>
+                    </div>
+                    <h3 class="font-semibold mb-1 truncate" style="color: var(--text-primary);">${escapeHtml(s.name)}</h3>
+                    <p class="text-xs mb-3" style="color: var(--text-tertiary);">${escapeHtml(s.contact_person || 'No contact')}</p>
+                    <div class="space-y-2 text-sm" style="color: var(--text-secondary);">
+                        ${s.email ? `<div class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg><span class="truncate">${escapeHtml(s.email)}</span></div>` : ''}
+                        ${s.phone ? `<div class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>${escapeHtml(s.phone)}</span></div>` : ''}
+                        ${s.city ? `<div class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span>${escapeHtml(s.city)}${s.state ? ', ' + escapeHtml(s.state) : ''}</span></div>` : ''}
+                    </div>
+                    <div style="height: 1px; background: var(--border-light); margin: 1rem 0;"></div>
+                    <div class="flex gap-2">
+                        <button onclick="editSupplier('${s.id}')" class="btn btn-secondary btn-sm flex-1 btn-press">Edit</button>
+                        <button onclick="deleteSupplier('${s.id}', '${escapeHtml(s.name)}')" class="btn btn-ghost btn-sm btn-press" style="color: var(--color-danger);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add/Edit Modal
+        window.showSupplierModal = function(supplier = null) {
+            const isEdit = !!supplier;
+            const modal = showModal({
+                title: isEdit ? 'Edit Supplier' : 'Add Supplier',
+                size: 'md',
+                content: `
+                    <form id="supplierForm" class="space-y-4">
+                        <div class="form-group"><label class="form-label">Name *</label><input type="text" id="modalName" class="form-input" value="${isEdit ? escapeHtml(supplier.name) : ''}" required></div>
+                        <div class="form-group"><label class="form-label">Contact Person</label><input type="text" id="modalContact" class="form-input" value="${isEdit ? escapeHtml(supplier.contact_person || '') : ''}"></div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="form-group"><label class="form-label">Email</label><input type="email" id="modalEmail" class="form-input" value="${isEdit ? escapeHtml(supplier.email || '') : ''}"></div>
+                            <div class="form-group"><label class="form-label">Phone</label><input type="text" id="modalPhone" class="form-input" value="${isEdit ? escapeHtml(supplier.phone || '') : ''}"></div>
+                        </div>
+                        <div class="form-group"><label class="form-label">Address</label><input type="text" id="modalAddress" class="form-input" value="${isEdit ? escapeHtml(supplier.address || '') : ''}"></div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="form-group"><label class="form-label">City</label><input type="text" id="modalCity" class="form-input" value="${isEdit ? escapeHtml(supplier.city || '') : ''}"></div>
+                            <div class="form-group"><label class="form-label">State</label><input type="text" id="modalState" class="form-input" value="${isEdit ? escapeHtml(supplier.state || '') : ''}"></div>
+                            <div class="form-group"><label class="form-label">Country</label><input type="text" id="modalCountry" class="form-input" value="${isEdit ? escapeHtml(supplier.country || 'India') : 'India'}"></div>
+                        </div>
+                        <div class="form-group"><label class="form-label">Website</label><input type="url" id="modalWebsite" class="form-input" value="${isEdit ? escapeHtml(supplier.website || '') : ''}" placeholder="https://example.com"></div>
+                        <div class="form-group"><label class="form-label">Status</label><select id="modalStatus" class="form-select"><option value="active" ${isEdit && supplier.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${isEdit && supplier.status === 'inactive' ? 'selected' : ''}>Inactive</option></select></div>
+                        <div class="form-group"><label class="form-label">Notes</label><textarea id="modalNotes" class="form-textarea" rows="2">${isEdit ? escapeHtml(supplier.notes || '') : ''}</textarea></div>
+                    </form>
+                `,
+                confirmText: isEdit ? 'Update' : 'Save',
+                onConfirm: async () => {
+                    const form = document.getElementById('supplierForm');
+                    if (!form.checkValidity()) { form.reportValidity(); return; }
+
+                    const data = {
+                        name: document.getElementById('modalName').value.trim(),
+                        contact_person: document.getElementById('modalContact').value.trim() || null,
+                        email: document.getElementById('modalEmail').value.trim() || null,
+                        phone: document.getElementById('modalPhone').value.trim() || null,
+                        address: document.getElementById('modalAddress').value.trim() || null,
+                        city: document.getElementById('modalCity').value.trim() || null,
+                        state: document.getElementById('modalState').value.trim() || null,
+                        country: document.getElementById('modalCountry').value.trim() || 'India',
+                        website: document.getElementById('modalWebsite').value.trim() || null,
+                        status: document.getElementById('modalStatus').value,
+                        notes: document.getElementById('modalNotes').value.trim() || null
+                    };
+
+                    try {
+                        if (isEdit) {
+                            const { error } = await supabase.from('suppliers').update(data).eq('id', supplier.id);
+                            if (error) throw error;
+                            showToast('Supplier updated!', 'success');
+                        } else {
+                            const { error } = await supabase.from('suppliers').insert([data]);
+                            if (error) throw error;
+                            showToast('Supplier added!', 'success');
+                        }
+                        closeModal();
+                        await fetchSuppliers();
+                    } catch (error) {
+                        showToast('Error: ' + error.message, 'error');
+                    }
+                }
+            });
+        };
+
+        window.editSupplier = function(id) {
+            const supplier = allSuppliers.find(s => s.id === id);
+            if (supplier) showSupplierModal(supplier);
+        };
+
+        window.deleteSupplier = function(id, name) {
+            showConfirm(`Delete "${name}"?`, 'Delete Supplier', async () => {
+                try {
+                    const { error } = await supabase.from('suppliers').delete().eq('id', id);
+                    if (error) throw error;
+                    showToast('Supplier deleted', 'success');
+                    await fetchSuppliers();
+                } catch (error) { showToast('Error: ' + error.message, 'error'); }
+                closeModal();
+            }, null, 'Delete', 'btn-danger');
+        };
+
+        document.getElementById('searchInput').addEventListener('input', debounce(() => {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allSuppliers.filter(s => 
+                (s.name && s.name.toLowerCase().includes(term)) ||
+                (s.email && s.email.toLowerCase().includes(term)) ||
+                (s.phone && s.phone.includes(term)) ||
+                (s.city && s.city.toLowerCase().includes(term))
+            );
+            renderSuppliers(filtered);
+        }, 300));
+
+        fetchSuppliers();
+    </script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

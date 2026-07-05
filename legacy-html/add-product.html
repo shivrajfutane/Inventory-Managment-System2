@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Add Product | InventoryPro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+    
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header" style="padding: 1.25rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-light);">
+                <div class="icon-box icon-box-md" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600)); flex-shrink: 0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                </div>
+                <span class="sidebar-logo-text font-bold text-lg" style="color: var(--text-primary);">InventoryPro</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto no-scrollbar" style="padding: 0.75rem;">
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 0.75rem 1rem 0.5rem;">Main</div>
+                <a href="index.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span class="sidebar-text">Dashboard</span></a>
+                <a href="products.html" class="sidebar-link active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span class="sidebar-text">Products</span></a>
+                <a href="suppliers.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="sidebar-text">Suppliers</span></a>
+                <a href="inventory.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg><span class="sidebar-text">Inventory</span></a>
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 1.5rem 1rem 0.5rem;">Analytics</div>
+                <a href="transactions.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/></svg><span class="sidebar-text">Transactions</span></a>
+                <a href="reports.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span class="sidebar-text">Reports</span></a>
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 1.5rem 1rem 0.5rem;">System</div>
+                <a href="settings.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sidebar-text">Settings</span></a>
+                <a href="admin.html" class="sidebar-link" data-admin-only style="display: none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="sidebar-text">Admin Panel</span></a>
+            </nav>
+            <div style="padding: 1rem; border-top: 1px solid var(--border-light);">
+                <button id="sidebarToggle" class="sidebar-link" style="width: 100%;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg><span class="sidebar-text">Collapse</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="flex items-center gap-4">
+                    <button onclick="openMobileSidebar()" class="lg:hidden btn btn-ghost p-2" style="color: var(--text-secondary);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+                    <div>
+                        <h2 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);" id="headerTitle">Add Product</h2>
+                        <p style="font-size: 0.75rem; color: var(--text-tertiary);">Fill in the details below</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="themeToggle" class="btn btn-ghost btn-sm btn-press" data-tooltip="Toggle Theme">
+                        <svg id="lightIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                        <svg id="darkIcon" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    </button>
+                    <div class="relative">
+                        <button id="userMenuBtn" class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl" style="border: 1px solid var(--border-light); background: var(--bg-card);" data-dropdown="userDropdown">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));"><span data-user-name>U</span></div>
+                        </button>
+                        <div id="userDropdown" class="dropdown-menu hidden absolute right-0 top-full mt-2" style="min-width: 180px; z-index: var(--z-dropdown);">
+                            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-light);"><p class="text-sm font-semibold" data-user-name>User</p></div>
+                            <a href="settings.html" class="dropdown-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>Settings</a>
+                            <div style="border-top: 1px solid var(--border-light);"><button id="logoutBtn" class="dropdown-item danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Logout</button></div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area page-fade-in">
+                <div class="page-header">
+                    <div class="flex items-center gap-3">
+                        <a href="products.html" class="btn btn-ghost btn-sm btn-press">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                        </a>
+                        <div>
+                            <h1 id="formTitle">Add Product</h1>
+                            <p id="formSubtitle">Create a new product in your inventory</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="productForm" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Main Info -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="app-card p-6">
+                            <h3 class="text-base font-semibold mb-4" style="color: var(--text-primary);">Basic Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2 form-group">
+                                    <label class="form-label">Product Name *</label>
+                                    <input type="text" id="name" class="form-input" placeholder="e.g., Wireless Bluetooth Headphones" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">SKU *</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="sku" class="form-input" placeholder="e.g., SKU-ABC123" required>
+                                        <button type="button" onclick="document.getElementById('sku').value = generateSKU()" class="btn btn-secondary btn-sm whitespace-nowrap">Generate</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Category</label>
+                                    <select id="categoryId" class="form-select">
+                                        <option value="">Select Category</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2 form-group">
+                                    <label class="form-label">Description</label>
+                                    <textarea id="description" class="form-textarea" rows="3" placeholder="Product description..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="app-card p-6">
+                            <h3 class="text-base font-semibold mb-4" style="color: var(--text-primary);">Pricing & Inventory</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="form-group">
+                                    <label class="form-label">Unit Price *</label>
+                                    <input type="number" id="unitPrice" class="form-input" placeholder="0.00" min="0" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Cost Price</label>
+                                    <input type="number" id="costPrice" class="form-input" placeholder="0.00" min="0" step="0.01">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Initial Quantity *</label>
+                                    <input type="number" id="quantity" class="form-input" placeholder="0" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Min Stock Level</label>
+                                    <input type="number" id="minStockLevel" class="form-input" placeholder="10" min="0" value="10">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Status</label>
+                                    <select id="status" class="form-select">
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="discontinued">Discontinued</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Supplier</label>
+                                    <select id="supplierId" class="form-select">
+                                        <option value="">Select Supplier</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        <div class="app-card p-6">
+                            <h3 class="text-base font-semibold mb-4" style="color: var(--text-primary);">Product Image</h3>
+                            <div id="imagePreview" class="img-container mb-4" style="width: 100%; height: 200px; border-radius: var(--radius-lg); border: 2px dashed var(--border-medium); cursor: pointer;" onclick="document.getElementById('imageInput').click()">
+                                <div class="text-center" style="color: var(--text-tertiary);">
+                                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mx-auto mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                    <p class="text-sm">Click to upload image</p>
+                                    <p class="text-xs">PNG, JPG up to 5MB</p>
+                                </div>
+                                <img id="previewImg" class="hidden" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-lg);">
+                            </div>
+                            <input type="file" id="imageInput" class="hidden" accept="image/*" onchange="previewImage(event)">
+                            <button type="button" onclick="document.getElementById('imageInput').click()" class="btn btn-secondary w-full btn-sm">Choose Image</button>
+                        </div>
+
+                        <div class="app-card p-6">
+                            <h3 class="text-base font-semibold mb-4" style="color: var(--text-primary);">Actions</h3>
+                            <div class="space-y-3">
+                                <button type="submit" id="saveBtn" class="btn btn-primary w-full btn-press">
+                                    <span id="saveBtnText">Save Product</span>
+                                </button>
+                                <a href="products.html" class="btn btn-secondary w-full text-center block">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container"></div>
+
+    <script type="module">
+        import { supabase, uploadFile, getPublicUrl } from './js/supabase.js';
+        import { requireAuth, logout, getUserProfile } from './js/auth.js';
+        import { initAnimations } from './js/animations.js';
+
+        await requireAuth();
+        initAnimations();
+
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        // Check if editing
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('id');
+        let editingProduct = null;
+        let uploadedImageUrl = null;
+
+        // Fetch dropdown data
+        async function fetchDropdowns() {
+            const [{ data: categories }, { data: suppliers }] = await Promise.all([
+                supabase.from('categories').select('id, name').order('name'),
+                supabase.from('suppliers').select('id, name').order('name')
+            ]);
+
+            const catSelect = document.getElementById('categoryId');
+            categories?.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name;
+                catSelect.appendChild(opt);
+            });
+
+            const supSelect = document.getElementById('supplierId');
+            suppliers?.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.name;
+                supSelect.appendChild(opt);
+            });
+        }
+
+        // Load product for editing
+        async function loadProduct(id) {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (error) throw error;
+                if (!data) { showToast('Product not found', 'error'); window.location.href = 'products.html'; return; }
+
+                editingProduct = data;
+                document.getElementById('formTitle').textContent = 'Edit Product';
+                document.getElementById('headerTitle').textContent = 'Edit Product';
+                document.getElementById('formSubtitle').textContent = 'Update product details';
+                document.getElementById('pageTitle').textContent = 'Edit Product | InventoryPro';
+                document.getElementById('saveBtnText').textContent = 'Update Product';
+                setPageTitle('Edit Product');
+
+                // Fill form
+                document.getElementById('name').value = data.name;
+                document.getElementById('sku').value = data.sku;
+                document.getElementById('categoryId').value = data.category_id || '';
+                document.getElementById('description').value = data.description || '';
+                document.getElementById('unitPrice').value = data.unit_price;
+                document.getElementById('costPrice').value = data.cost_price || '';
+                document.getElementById('quantity').value = data.quantity;
+                document.getElementById('minStockLevel').value = data.min_stock_level;
+                document.getElementById('status').value = data.status;
+                document.getElementById('supplierId').value = data.supplier_id || '';
+
+                // Show existing image
+                if (data.image_url) {
+                    uploadedImageUrl = data.image_url;
+                    document.getElementById('previewImg').src = data.image_url;
+                    document.getElementById('previewImg').classList.remove('hidden');
+                    document.querySelector('#imagePreview div').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading product:', error);
+                showToast('Error loading product', 'error');
+            }
+        }
+
+        // Image preview
+        window.previewImage = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Image must be less than 5MB', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('previewImg').classList.remove('hidden');
+                document.querySelector('#imagePreview div').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // Form submission
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const saveBtn = document.getElementById('saveBtn');
+            const saveBtnText = document.getElementById('saveBtnText');
+            saveBtn.disabled = true;
+            saveBtnText.innerHTML = `<svg class="spinner inline-block mr-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke-linecap="round" stroke-dasharray="31.42" stroke-dashoffset="10"/></svg>Saving...`;
+
+            try {
+                // Get form data
+                const name = document.getElementById('name').value.trim();
+                const sku = document.getElementById('sku').value.trim().toUpperCase();
+                const categoryId = document.getElementById('categoryId').value || null;
+                const description = document.getElementById('description').value.trim() || null;
+                const unitPrice = parseFloat(document.getElementById('unitPrice').value) || 0;
+                const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+                const quantity = parseInt(document.getElementById('quantity').value) || 0;
+                const minStockLevel = parseInt(document.getElementById('minStockLevel').value) || 10;
+                const status = document.getElementById('status').value;
+                const supplierId = document.getElementById('supplierId').value || null;
+
+                // Validation
+                if (!name || !sku) {
+                    showToast('Product name and SKU are required', 'error');
+                    saveBtn.disabled = false;
+                    saveBtnText.textContent = editingProduct ? 'Update Product' : 'Save Product';
+                    return;
+                }
+
+                if (unitPrice < 0 || costPrice < 0 || quantity < 0 || minStockLevel < 0) {
+                    showToast('Prices and quantities cannot be negative', 'error');
+                    saveBtn.disabled = false;
+                    saveBtnText.textContent = editingProduct ? 'Update Product' : 'Save Product';
+                    return;
+                }
+
+                // Check duplicate SKU (when adding new)
+                if (!editId || (editingProduct && editingProduct.sku !== sku)) {
+                    const { data: existing } = await supabase.from('products').select('id').eq('sku', sku).maybeSingle();
+                    if (existing) {
+                        showToast('SKU already exists. Please use a different SKU.', 'error');
+                        saveBtn.disabled = false;
+                        saveBtnText.textContent = editingProduct ? 'Update Product' : 'Save Product';
+                        return;
+                    }
+                }
+
+                // Upload image if selected
+                let imageUrl = uploadedImageUrl;
+                const imageFile = document.getElementById('imageInput').files[0];
+                if (imageFile) {
+                    const fileExt = imageFile.name.split('.').pop();
+                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                    const { success, publicUrl, error: uploadError } = await uploadFile('product-images', fileName, imageFile);
+                    if (!success) {
+                        showToast('Failed to upload image: ' + uploadError, 'error');
+                    } else {
+                        imageUrl = publicUrl;
+                    }
+                }
+
+                // Get current user for created_by
+                const profile = await getUserProfile();
+
+                const productData = {
+                    name, sku, category_id: categoryId, description,
+                    unit_price: unitPrice, cost_price: costPrice,
+                    quantity, min_stock_level: minStockLevel,
+                    status, supplier_id: supplierId,
+                    image_url: imageUrl,
+                    updated_at: new Date().toISOString()
+                };
+
+                let result;
+                if (editId) {
+                    result = await supabase.from('products').update(productData).eq('id', editId);
+                } else {
+                    productData.created_by = profile?.id;
+                    result = await supabase.from('products').insert([productData]);
+                }
+
+                if (result.error) throw result.error;
+
+                showToast(editId ? 'Product updated successfully!' : 'Product created successfully!', 'success');
+                setTimeout(() => { window.location.href = 'products.html'; }, 500);
+
+            } catch (error) {
+                console.error('Error saving product:', error);
+                showToast('Error: ' + error.message, 'error');
+                saveBtn.disabled = false;
+                saveBtnText.textContent = editingProduct ? 'Update Product' : 'Save Product';
+            }
+        });
+
+        // Initialize
+        await fetchDropdowns();
+        if (editId) {
+            await loadProduct(editId);
+        } else {
+            setPageTitle('Add Product');
+        }
+    </script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

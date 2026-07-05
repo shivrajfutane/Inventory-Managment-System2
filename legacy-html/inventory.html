@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        if (localStorage.getItem('darkMode') === 'true' || (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management | InventoryPro</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#EFF6FF', 100: '#DBEAFE', 200: '#BFDBFE', 300: '#93C5FD', 400: '#60A5FA', 500: '#3B82F6', 600: '#2563EB', 700: '#1D4ED8', 800: '#1E40AF', 900: '#1E3A8A' }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+    <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+    
+    <div class="app-layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header" style="padding: 1.25rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-light);">
+                <div class="icon-box icon-box-md" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600)); flex-shrink: 0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                </div>
+                <span class="sidebar-logo-text font-bold text-lg" style="color: var(--text-primary);">InventoryPro</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto no-scrollbar" style="padding: 0.75rem;">
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 0.75rem 1rem 0.5rem;">Main</div>
+                <a href="index.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg><span class="sidebar-text">Dashboard</span></a>
+                <a href="products.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg><span class="sidebar-text">Products</span></a>
+                <a href="suppliers.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="sidebar-text">Suppliers</span></a>
+                <a href="inventory.html" class="sidebar-link active"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg><span class="sidebar-text">Inventory</span></a>
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 1.5rem 1rem 0.5rem;">Analytics</div>
+                <a href="transactions.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/></svg><span class="sidebar-text">Transactions</span></a>
+                <a href="reports.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg><span class="sidebar-text">Reports</span></a>
+                <div style="font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-tertiary); padding: 1.5rem 1rem 0.5rem;">System</div>
+                <a href="settings.html" class="sidebar-link"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="sidebar-text">Settings</span></a>
+                <a href="admin.html" class="sidebar-link" data-admin-only style="display: none;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span class="sidebar-text">Admin Panel</span></a>
+            </nav>
+            <div style="padding: 1rem; border-top: 1px solid var(--border-light);">
+                <button id="sidebarToggle" class="sidebar-link" style="width: 100%;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg><span class="sidebar-text">Collapse</span></button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div class="flex items-center gap-4">
+                    <button onclick="openMobileSidebar()" class="lg:hidden btn btn-ghost p-2" style="color: var(--text-secondary);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+                    <div><h2 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary);">Inventory Management</h2><p style="font-size: 0.75rem; color: var(--text-tertiary);">Stock in, stock out, and adjustments</p></div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="themeToggle" class="btn btn-ghost btn-sm btn-press" data-tooltip="Toggle Theme">
+                        <svg id="lightIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                        <svg id="darkIcon" class="hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    </button>
+                    <div class="relative">
+                        <button id="userMenuBtn" class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl" style="border: 1px solid var(--border-light); background: var(--bg-card);" data-dropdown="userDropdown">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));"><span data-user-name>U</span></div>
+                        </button>
+                        <div id="userDropdown" class="dropdown-menu hidden absolute right-0 top-full mt-2" style="min-width: 180px; z-index: var(--z-dropdown);">
+                            <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-light);"><p class="text-sm font-semibold" data-user-name>User</p></div>
+                            <a href="settings.html" class="dropdown-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>Settings</a>
+                            <div style="border-top: 1px solid var(--border-light);"><button id="logoutBtn" class="dropdown-item danger"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>Logout</button></div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area page-fade-in">
+                <div class="page-header">
+                    <h1>Stock Management</h1>
+                    <p>Record stock movements and view low stock alerts</p>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                    <button onclick="showStockModal('stock_in')" class="app-card p-6 text-center hover-lift btn-press" style="border-left: 4px solid var(--color-success);">
+                        <div class="icon-box icon-box-lg mx-auto mb-3" style="background: var(--color-success-light); color: var(--color-success);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+                        <h3 class="font-semibold" style="color: var(--text-primary);">Stock In</h3>
+                        <p class="text-xs mt-1" style="color: var(--text-tertiary);">Add products to inventory</p>
+                    </button>
+                    <button onclick="showStockModal('stock_out')" class="app-card p-6 text-center hover-lift btn-press" style="border-left: 4px solid var(--color-primary-500);">
+                        <div class="icon-box icon-box-lg mx-auto mb-3" style="background: var(--color-info-light); color: var(--color-info);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+                        <h3 class="font-semibold" style="color: var(--text-primary);">Stock Out</h3>
+                        <p class="text-xs mt-1" style="color: var(--text-tertiary);">Remove products from inventory</p>
+                    </button>
+                    <button onclick="showStockModal('adjustment')" class="app-card p-6 text-center hover-lift btn-press" style="border-left: 4px solid var(--color-warning);">
+                        <div class="icon-box icon-box-lg mx-auto mb-3" style="background: var(--color-warning-light); color: var(--color-warning);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="m16.2 7.8-2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg></div>
+                        <h3 class="font-semibold" style="color: var(--text-primary);">Adjust Stock</h3>
+                        <p class="text-xs mt-1" style="color: var(--text-tertiary);">Correct inventory levels</p>
+                    </button>
+                </div>
+
+                <!-- Low Stock Alerts -->
+                <div class="app-card p-6 mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-base font-semibold" style="color: var(--text-primary);">Low Stock Alerts</h3>
+                            <p class="text-sm" style="color: var(--text-tertiary);">Products below minimum stock level</p>
+                        </div>
+                        <span id="alertCount" class="text-sm font-semibold px-3 py-1 rounded-full" style="background: var(--color-danger-light); color: var(--color-danger);">0 items</span>
+                    </div>
+                    <div id="lowStockList" class="space-y-2">
+                        <div class="skeleton" style="height: 50px; border-radius: var(--radius-md);"></div>
+                        <div class="skeleton" style="height: 50px; border-radius: var(--radius-md);"></div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="app-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-base font-semibold" style="color: var(--text-primary);">Recent Transactions</h3>
+                            <p class="text-sm" style="color: var(--text-tertiary);">Latest stock movements</p>
+                        </div>
+                        <a href="transactions.html" class="text-sm link-underline" style="color: var(--color-primary-500);">View All</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr><th>Product</th><th>Type</th><th>Quantity</th><th>Previous</th><th>New</th><th>Reference</th><th>Date</th></tr>
+                            </thead>
+                            <tbody id="recentTransactions">
+                                <tr><td colspan="7"><div class="skeleton" style="height: 100px;"></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container"></div>
+
+    <script type="module">
+        import { supabase, getCurrentUser } from './js/supabase.js';
+        import { requireAuth, logout } from './js/auth.js';
+        import { initAnimations } from './js/animations.js';
+
+        await requireAuth();
+        initAnimations();
+        setPageTitle('Inventory');
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+
+        let products = [];
+
+        async function fetchProducts() {
+            const { data, error } = await supabase.from('products').select('id, name, quantity, min_stock_level, sku').order('name');
+            if (!error) products = data || [];
+        }
+
+        async function loadLowStock() {
+            const { data, error } = await supabase
+                .from('products')
+                .select('*, categories(name, color)')
+                .order('quantity', { ascending: true });
+
+            if (error) return;
+            const lowStock = (data || []).filter(p => p.quantity <= p.min_stock_level);
+            document.getElementById('alertCount').textContent = `${lowStock.length} items`;
+
+            const list = document.getElementById('lowStockList');
+            if (!lowStock.length) { list.innerHTML = '<p class="text-sm text-center py-4" style="color: var(--text-tertiary);">All products are well stocked!</p>'; return; }
+
+            list.innerHTML = lowStock.slice(0, 10).map(item => {
+                const pct = Math.round((item.quantity / item.min_stock_level) * 100);
+                const barColor = pct <= 25 ? 'var(--color-danger)' : pct <= 50 ? 'var(--color-warning)' : 'var(--color-primary-500)';
+                return `
+                    <div class="flex items-center gap-3 p-3 rounded-xl" style="background: var(--bg-hover);">
+                        <div class="icon-box icon-box-sm" style="background: var(--color-danger-light); color: var(--color-danger); flex-shrink: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <p class="text-sm font-medium truncate" style="color: var(--text-primary);">${escapeHtml(item.name)}</p>
+                                <span class="text-xs font-semibold" style="color: ${barColor};">${item.quantity}/${item.min_stock_level}</span>
+                            </div>
+                            <div class="w-full h-1.5 rounded-full" style="background: var(--border-light);"><div class="h-full rounded-full" style="width: ${Math.min(pct, 100)}%; background: ${barColor};"></div></div>
+                        </div>
+                        <a href="product-details.html?id=${item.id}" class="btn btn-ghost btn-sm">View</a>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadRecentTransactions() {
+            const { data, error } = await supabase
+                .from('inventory_transactions')
+                .select('*, product:products(name, sku)')
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            const tbody = document.getElementById('recentTransactions');
+            if (error || !data || !data.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-sm" style="color: var(--text-tertiary);">No transactions yet</td></tr>'; return; }
+
+            tbody.innerHTML = data.map(txn => {
+                const typeLabels = { stock_in: 'Stock In', stock_out: 'Stock Out', adjustment: 'Adjustment' };
+                const typeClasses = { stock_in: 'txn-stock_in', stock_out: 'txn-stock_out', adjustment: 'txn-adjustment' };
+                return `
+                    <tr class="table-row-hover">
+                        <td><div><p class="text-sm font-medium" style="color: var(--text-primary);">${escapeHtml(txn.product?.name || 'Unknown')}</p><p class="text-xs" style="color: var(--text-tertiary);">${txn.product?.sku || ''}</p></div></td>
+                        <td><span class="text-xs font-medium px-2 py-1 rounded-full ${typeClasses[txn.type]}">${typeLabels[txn.type]}</span></td>
+                        <td class="text-sm font-semibold" style="color: var(--text-primary);">${txn.quantity}</td>
+                        <td class="text-sm" style="color: var(--text-tertiary);">${txn.previous_stock}</td>
+                        <td class="text-sm font-semibold" style="color: var(--text-primary);">${txn.new_stock}</td>
+                        <td class="text-sm" style="color: var(--text-tertiary);">${txn.reference ? escapeHtml(txn.reference) : '-'}</td>
+                        <td class="text-sm" style="color: var(--text-tertiary);">${formatDate(txn.created_at)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Stock Modal
+        window.showStockModal = async function(type) {
+            await fetchProducts();
+            const activeProducts = products.filter(p => p.status === 'active');
+            const typeConfig = {
+                stock_in: { title: 'Stock In', color: 'var(--color-success)', icon: '↑' },
+                stock_out: { title: 'Stock Out', color: 'var(--color-primary-500)', icon: '↓' },
+                adjustment: { title: 'Stock Adjustment', color: 'var(--color-warning)', icon: '↔' }
+            };
+            const tc = typeConfig[type];
+
+            showModal({
+                title: `${tc.icon} ${tc.title}`,
+                size: 'md',
+                content: `
+                    <form id="stockForm" class="space-y-4">
+                        <div class="form-group">
+                            <label class="form-label">Product *</label>
+                            <select id="stockProductId" class="form-select" required>
+                                <option value="">Select a product</option>
+                                ${activeProducts.map(p => `<option value="${p.id}" data-qty="${p.quantity}">${escapeHtml(p.name)} (${p.sku}) - Current: ${p.quantity}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Quantity *</label>
+                            <input type="number" id="stockQuantity" class="form-input" min="1" placeholder="Enter quantity" required>
+                            <p id="currentStockHint" class="form-hint">Current stock: -</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Unit Price (optional)</label>
+                            <input type="number" id="stockPrice" class="form-input" min="0" step="0.01" placeholder="Price per unit">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Reference / Notes</label>
+                            <input type="text" id="stockReference" class="form-input" placeholder="e.g., Purchase Order #123">
+                        </div>
+                    </form>
+                `,
+                confirmText: 'Submit',
+                confirmClass: type === 'stock_in' ? 'btn-success' : type === 'stock_out' ? 'btn-primary' : 'btn-secondary',
+                onConfirm: async () => {
+                    const form = document.getElementById('stockForm');
+                    if (!form.checkValidity()) { form.reportValidity(); return; }
+
+                    const productId = document.getElementById('stockProductId').value;
+                    const quantity = parseInt(document.getElementById('stockQuantity').value);
+                    const price = parseFloat(document.getElementById('stockPrice').value) || 0;
+                    const reference = document.getElementById('stockReference').value.trim() || null;
+
+                    if (!productId || quantity < 1) { showToast('Please fill in all required fields', 'error'); return; }
+
+                    const product = products.find(p => p.id === productId);
+                    if (!product) { showToast('Product not found', 'error'); return; }
+
+                    let newStock;
+                    if (type === 'stock_in') newStock = product.quantity + quantity;
+                    else if (type === 'stock_out') {
+                        if (quantity > product.quantity) { showToast('Insufficient stock available', 'error'); return; }
+                        newStock = product.quantity - quantity;
+                    } else {
+                        newStock = quantity; // For adjustment, quantity is the new value
+                    }
+
+                    if (newStock < 0) { showToast('Stock cannot be negative', 'error'); return; }
+
+                    try {
+                        // Update product quantity
+                        const { error: updateError } = await supabase.from('products').update({ quantity: newStock }).eq('id', productId);
+                        if (updateError) throw updateError;
+
+                        // Create transaction record
+                        const user = await getCurrentUser();
+                        const { error: txnError } = await supabase.from('inventory_transactions').insert([{
+                            product_id: productId,
+                            type,
+                            quantity: type === 'adjustment' ? Math.abs(newStock - product.quantity) : quantity,
+                            previous_stock: product.quantity,
+                            new_stock: newStock,
+                            unit_price: price || null,
+                            total_amount: price ? price * quantity : null,
+                            reference,
+                            notes: `${tc.title} - ${quantity} units`,
+                            created_by: user?.id
+                        }]);
+                        if (txnError) throw txnError;
+
+                        showToast(`${tc.title} completed successfully!`, 'success');
+                        closeModal();
+                        await Promise.all([loadLowStock(), loadRecentTransactions()]);
+                    } catch (error) {
+                        showToast('Error: ' + error.message, 'error');
+                    }
+                }
+            });
+
+            // Update hint on product selection
+            setTimeout(() => {
+                document.getElementById('stockProductId')?.addEventListener('change', function() {
+                    const selected = this.options[this.selectedIndex];
+                    document.getElementById('currentStockHint').textContent = `Current stock: ${selected.dataset.qty || '-'}`;
+                });
+            }, 100);
+        };
+
+        // Load data
+        await Promise.all([fetchProducts(), loadLowStock(), loadRecentTransactions()]);
+
+        // Subscribe to real-time updates
+        supabase.channel('inventory-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+            loadLowStock();
+        }).subscribe();
+
+        supabase.channel('transaction-changes').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'inventory_transactions' }, () => {
+            loadRecentTransactions();
+            loadLowStock();
+        }).subscribe();
+    </script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
