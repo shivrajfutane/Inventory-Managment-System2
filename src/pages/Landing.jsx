@@ -676,9 +676,9 @@ export default function Landing() {
 
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:24, alignItems:'stretch' }}>
                     {[
-                        { tier:'Starter', price:'$0', period:'/ forever', tagline:'For solopreneurs and very small teams.', highlight:false, items:['Up to 100 SKUs','1 Team Member','1 Warehouse','Basic stock log',null,''] },
-                        { tier:'Professional', price:'$29', period:'/ month', tagline:'Best for growing operations teams.', highlight:true, items:['Unlimited SKUs','Up to 5 Team Members','3 Warehouse locations','Automatic Low Stock Alerts','Bulk CSV Import/Export'] },
-                        { tier:'Enterprise', price:'$89', period:'/ month', tagline:'For corporations with complex supply chains.', highlight:false, items:['Unlimited Warehouses','Unlimited Users & Roles','Full REST & Webhook API','Dedicated Success Manager','SSO/SAML Integration'] },
+                        { tier:'Starter', price:'₹0', period:'/ forever', tagline:'For solopreneurs and very small teams.', highlight:false, items:['Up to 100 SKUs','1 Team Member','1 Warehouse','Basic stock log',null,''] },
+                        { tier:'Professional', price:'₹2,499', period:'/ month', tagline:'Best for growing operations teams.', highlight:true, items:['Unlimited SKUs','Up to 5 Team Members','3 Warehouse locations','Automatic Low Stock Alerts','Bulk CSV Import/Export'] },
+                        { tier:'Enterprise', price:'₹7,499', period:'/ month', tagline:'For corporations with complex supply chains.', highlight:false, items:['Unlimited Warehouses','Unlimited Users & Roles','Full REST & Webhook API','Dedicated Success Manager','SSO/SAML Integration'] },
                     ].map((p, i) => (
                         <div key={i} className="glass" style={{ borderRadius:20, padding:'2rem', display:'flex', flexDirection:'column', border: p.highlight ? '2px solid rgba(99,102,241,.5)' : `1px solid ${isDarkMode ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)'}`, boxShadow: p.highlight ? '0 16px 48px -12px rgba(99,102,241,.28)' : 'none', position:'relative' }}>
                             {p.highlight && <span style={{ position:'absolute', top:-12, left:'50%', transform:'translateX(-50%)', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', color:'#fff', fontSize:'0.6rem', fontWeight:800, padding:'3px 14px', borderRadius:100, textTransform:'uppercase', letterSpacing:'0.07em', whiteSpace:'nowrap' }}>Most Popular</span>}
