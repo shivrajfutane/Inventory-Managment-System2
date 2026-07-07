@@ -89,6 +89,7 @@ const Transactions = () => {
                                         <th>Product</th>
                                         <th>Type</th>
                                         <th>Quantity</th>
+                                        <th>Stock Flow</th>
                                         <th>Reference</th>
                                         <th>Notes</th>
                                         <th>Date</th>
@@ -113,6 +114,11 @@ const Transactions = () => {
                                                 </td>
                                                 <td style={{ fontWeight: 700, color: t.type === 'stock_out' ? 'var(--color-danger)' : 'var(--text-primary)' }}>
                                                     {t.type === 'stock_out' ? '-' : '+'}{t.quantity}
+                                                </td>
+                                                <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                                                    <span style={{ color: 'var(--text-tertiary)' }}>{t.previous_stock}</span>
+                                                    <span style={{ margin: '0 0.25rem', color: 'var(--text-tertiary)' }}>➔</span>
+                                                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.new_stock}</span>
                                                 </td>
                                                 <td>
                                                     {t.reference

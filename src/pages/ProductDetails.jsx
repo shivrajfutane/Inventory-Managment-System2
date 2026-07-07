@@ -18,7 +18,7 @@ const ProductDetails = () => {
     useEffect(() => {
         const load = async () => {
             const [{ data: prod, error }, { data: txns }] = await Promise.all([
-                supabase.from('products').select('*, categories(name, color), suppliers(name)').eq('id', id).single(),
+                supabase.from('products').select('*, categories(name, color), suppliers(name)').eq('id', id).maybeSingle(),
                 supabase.from('inventory_transactions').select('*').eq('product_id', id).order('created_at', { ascending: false }).limit(10),
             ]);
             if (error || !prod) { showToast('Product not found', 'error'); navigate('/products'); return; }
@@ -31,7 +31,11 @@ const ProductDetails = () => {
 
     const handleDelete = () => {
         showConfirm(`Delete "${product.name}"? This cannot be undone.`, 'Delete Product', async () => {
-            await supabase.from('products').delete().eq('id', id);
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            if (error) {
+                showToast(error.message || 'Error deleting product', 'error');
+                return;
+            }
             showToast('Product deleted', 'success');
             navigate('/products');
         });

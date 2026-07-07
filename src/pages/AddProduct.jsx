@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { useToast } from '../context/ToastContext';
@@ -11,6 +11,175 @@ const EMPTY_FORM = {
     status: 'active', image_url: '',
 };
 
+/* ── Image Uploader Component ──────────────────────────────── */
+const ImageUploader = ({ value, onChange }) => {
+    const fileRef = useRef(null);
+    const [uploading, setUploading] = useState(false);
+    const [preview, setPreview] = useState(value || '');
+    const [dragOver, setDragOver] = useState(false);
+
+    // Keep preview in sync if parent resets form (edit mode)
+    useEffect(() => { setPreview(value || ''); }, [value]);
+
+    const uploadFile = async (file) => {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            return;
+        }
+        setUploading(true);
+        try {
+            const ext = file.name.split('.').pop();
+            const path = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+            const { error: upErr } = await supabase.storage
+                .from('product-images')
+                .upload(path, file, { upsert: true });
+            if (upErr) throw upErr;
+
+            const { data } = supabase.storage
+                .from('product-images')
+                .getPublicUrl(path);
+
+            setPreview(data.publicUrl);
+            onChange(data.publicUrl);
+        } catch (err) {
+            console.error('Upload failed:', err);
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleFileChange = (e) => uploadFile(e.target.files?.[0]);
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setDragOver(false);
+        uploadFile(e.dataTransfer.files?.[0]);
+    };
+
+    const handleUrlChange = (e) => {
+        setPreview(e.target.value);
+        onChange(e.target.value);
+    };
+
+    const handleRemove = () => {
+        setPreview('');
+        onChange('');
+        if (fileRef.current) fileRef.current.value = '';
+    };
+
+    return (
+        <div className="form-group">
+            <label className="form-label">Product Image</label>
+
+            {/* Drop zone / Preview */}
+            <div
+                onClick={() => !preview && fileRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                style={{
+                    border: `2px dashed ${dragOver ? 'var(--color-primary-500)' : 'var(--border-light)'}`,
+                    borderRadius: 12,
+                    background: dragOver ? 'var(--bg-active)' : 'var(--bg-hover)',
+                    minHeight: preview ? 'auto' : 120,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: preview ? 'default' : 'pointer',
+                    overflow: 'hidden',
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                }}
+            >
+                {uploading ? (
+                    <div style={{ padding: '1.5rem', textAlign: 'center' }}>
+                        <div style={{
+                            width: 32, height: 32, borderRadius: '50%',
+                            border: '3px solid var(--border-light)',
+                            borderTopColor: 'var(--color-primary-500)',
+                            animation: 'spin 0.8s linear infinite',
+                            margin: '0 auto 0.5rem',
+                        }} />
+                        <p style={{ fontSize: '0.8125rem', color: 'var(--text-tertiary)' }}>Uploading...</p>
+                    </div>
+                ) : preview ? (
+                    <>
+                        <img
+                            src={preview}
+                            alt="Product preview"
+                            style={{ width: '100%', maxHeight: 200, objectFit: 'contain', display: 'block' }}
+                            onError={() => setPreview('')}
+                        />
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleRemove(); }}
+                            style={{
+                                position: 'absolute', top: 8, right: 8,
+                                background: 'rgba(0,0,0,0.5)', color: 'white',
+                                border: 'none', borderRadius: 6, padding: '2px 8px',
+                                cursor: 'pointer', fontSize: '0.75rem', lineHeight: '1.6',
+                            }}
+                        >
+                            ✕ Remove
+                        </button>
+                    </>
+                ) : (
+                    <div style={{ padding: '1.5rem', textAlign: 'center' }}>
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" style={{ marginBottom: '0.5rem' }}>
+                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                            <circle cx="9" cy="9" r="2"/>
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                        </svg>
+                        <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0 }}>
+                            Click or drag & drop an image
+                        </p>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', margin: '0.25rem 0 0' }}>
+                            PNG, JPG, WebP supported
+                        </p>
+                    </div>
+                )}
+            </div>
+
+            {/* Hidden file input */}
+            <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+            />
+
+            {/* Upload button row */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', alignItems: 'center' }}>
+                <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                    style={{ flexShrink: 0 }}
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 4, verticalAlign: 'middle' }}>
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" x2="12" y1="3" y2="15"/>
+                    </svg>
+                    Upload Image
+                </button>
+                <input
+                    type="url"
+                    className="form-input"
+                    placeholder="or paste an image URL..."
+                    value={preview}
+                    onChange={handleUrlChange}
+                    style={{ fontSize: '0.8125rem' }}
+                />
+            </div>
+        </div>
+    );
+};
+
+/* ── Main Component ──────────────────────────────────────────── */
 const AddProduct = () => {
     const { id } = useParams();
     const isEdit = Boolean(id);
@@ -22,6 +191,7 @@ const AddProduct = () => {
     const [suppliers, setSuppliers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(isEdit);
+    const [originalQuantity, setOriginalQuantity] = useState(0);
 
     // Load categories + suppliers
     useEffect(() => {
@@ -40,9 +210,10 @@ const AddProduct = () => {
     useEffect(() => {
         if (!isEdit) return;
         const load = async () => {
-            const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+            const { data, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
             if (error || !data) { showToast('Product not found', 'error'); navigate('/products'); return; }
-            setForm({ ...EMPTY_FORM, ...data });
+            setForm({ ...EMPTY_FORM, ...data, image_url: data.image_url || '' });
+            setOriginalQuantity(data.quantity || 0);
             setFetching(false);
         };
         load();
@@ -77,13 +248,44 @@ const AddProduct = () => {
         };
 
         try {
-            let error;
             if (isEdit) {
-                ({ error } = await supabase.from('products').update(payload).eq('id', id));
+                const { error } = await supabase.from('products').update(payload).eq('id', id);
+                if (error) throw error;
+
+                // Log adjustment if quantity has changed
+                if (payload.quantity !== originalQuantity) {
+                    const diff = payload.quantity - originalQuantity;
+                    const type = diff > 0 ? 'stock_in' : 'stock_out';
+                    const { error: txErr } = await supabase.from('inventory_transactions').insert([{
+                        product_id: id,
+                        type,
+                        quantity: Math.abs(diff),
+                        previous_stock: originalQuantity,
+                        new_stock: payload.quantity,
+                        reference: 'UPDATE',
+                        notes: `Quantity adjusted from product edit form (${originalQuantity} ➔ ${payload.quantity})`
+                    }]);
+                    if (txErr) console.error('Error logging adjustment transaction:', txErr);
+                }
             } else {
-                ({ error } = await supabase.from('products').insert([payload]));
+                const { data: newProds, error } = await supabase.from('products').insert([payload]).select();
+                if (error) throw error;
+                const newProd = newProds?.[0];
+
+                // Log initial stock if quantity is > 0
+                if (payload.quantity > 0 && newProd) {
+                    const { error: txErr } = await supabase.from('inventory_transactions').insert([{
+                        product_id: newProd.id,
+                        type: 'stock_in',
+                        quantity: payload.quantity,
+                        previous_stock: 0,
+                        new_stock: payload.quantity,
+                        reference: 'INITIAL',
+                        notes: 'Initial stock on product creation'
+                    }]);
+                    if (txErr) console.error('Error logging initial stock transaction:', txErr);
+                }
             }
-            if (error) throw error;
             showToast(isEdit ? 'Product updated!' : 'Product added!', 'success');
             navigate('/products');
         } catch (err) {
@@ -160,11 +362,11 @@ const AddProduct = () => {
                             />
                         </div>
 
-                        <div className="form-group">
-                            <label htmlFor="image_url" className="form-label">Image URL</label>
-                            <input id="image_url" name="image_url" type="url" className="form-input"
-                                placeholder="https://..." value={form.image_url} onChange={handleChange} />
-                        </div>
+                        {/* Image uploader */}
+                        <ImageUploader
+                            value={form.image_url}
+                            onChange={(url) => setForm(prev => ({ ...prev, image_url: url }))}
+                        />
 
                         <div className="form-group">
                             <label htmlFor="status" className="form-label">Status</label>

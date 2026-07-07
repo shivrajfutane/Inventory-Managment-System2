@@ -43,22 +43,26 @@ const SkeletonBlock = ({ height = 60, radius = 12 }) => (
 );
 
 // ─── Stat Card ────────────────────────────────────────────────
-const StatCard = ({ title, value, badge, badgeStyle, iconBg, iconColor, icon, delay = 0, isValue = false }) => {
+const StatCard = ({ title, value, badge, badgeStyle, iconBg, iconColor, icon, delay = 0, isValue = false, href }) => {
     const animated = useAnimatedCounter(isValue ? 0 : (typeof value === 'number' ? value : 0));
-    return (
-        <div className="stat-card" style={{ animationDelay: `${delay}ms` }}>
-            <div className="flex items-center justify-between mb-4">
-                <div className="icon-box icon-box-lg" style={{ background: iconBg, color: iconColor }}>
+    const inner = (
+        <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                <div className="icon-box icon-box-lg" style={{ background: iconBg, color: iconColor, borderRadius: '10px' }}>
                     {icon}
                 </div>
-                <span className="text-xs font-semibold px-2 py-1 rounded-full" style={badgeStyle}>{badge}</span>
+                <span style={{ ...badgeStyle, fontSize: '0.6875rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: 99, letterSpacing: '0.02em' }}>{badge}</span>
             </div>
-            <h3 className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>{title}</h3>
-            <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            <p style={{ fontSize: '0.8125rem', fontWeight: 500, color: 'var(--text-tertiary)', marginBottom: '0.35rem', letterSpacing: '0.01em' }}>{title}</p>
+            <p style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1 }}>
                 {isValue ? formatCurrency(typeof value === 'number' ? value : 0) : animated}
             </p>
-        </div>
+        </>
     );
+    if (href) {
+        return <Link to={href} className="stat-card block" style={{ animationDelay: `${delay}ms`, textDecoration: 'none' }}>{inner}</Link>;
+    }
+    return <div className="stat-card" style={{ animationDelay: `${delay}ms` }}>{inner}</div>;
 };
 
 // ─── Transaction Type Config ──────────────────────────────────
@@ -245,95 +249,108 @@ const Dashboard = () => {
     return (
         <div>
             {/* Page Header */}
-            <div className="page-header">
-                <h1>Dashboard Overview</h1>
-                <p>Monitor your inventory performance and key metrics</p>
+            <div style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <div>
+                    <h1 style={{ fontSize: '1.375rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', margin: 0 }}>Dashboard</h1>
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--text-tertiary)', marginTop: '0.2rem' }}>Monitor inventory performance and key metrics</p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <Link to="/products/add" className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Product
+                    </Link>
+                    <Link to="/inventory" className="btn btn-secondary btn-sm">
+                        Stock Movement
+                    </Link>
+                </div>
             </div>
 
             {/* ── Stat Cards ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-5">
                 <StatCard
-                    title="Total Products" value={stats.totalProducts} badge="+12%" delay={0}
-                    badgeStyle={{ background: 'var(--color-success-light)', color: 'var(--color-success)' }}
-                    iconBg="linear-gradient(135deg,var(--color-primary-100),var(--color-primary-200))"
-                    iconColor="var(--color-primary-600)"
-                    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>}
+                    title="Total Products" value={stats.totalProducts} badge="Catalog" delay={0}
+                    badgeStyle={{ background: 'var(--color-primary-100)', color: 'var(--color-primary-700)' }}
+                    iconBg="linear-gradient(135deg,var(--color-primary-500),var(--color-primary-700))"
+                    iconColor="white"
+                    icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>}
                 />
                 <StatCard
-                    title="Categories" value={stats.totalCategories} badge="+5%" delay={80}
-                    badgeStyle={{ background: 'var(--color-success-light)', color: 'var(--color-success)' }}
-                    iconBg="linear-gradient(135deg,#E0E7FF,#C7D2FE)" iconColor="#4F46E5"
-                    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>}
-                />
-                <Link to="/inventory" className="stat-card block cursor-pointer" style={{ animationDelay: '160ms', textDecoration: 'none' }}>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="icon-box icon-box-lg" style={{ background: 'linear-gradient(135deg,#FEF3C7,#FDE68A)', color: '#D97706' }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        </div>
-                        <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>Action</span>
-                    </div>
-                    <h3 className="text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>Low Stock Items</h3>
-                    <p className="text-2xl font-bold" style={{ color: 'var(--color-danger)' }}>{stats.lowStockCount}</p>
-                </Link>
-                <StatCard
-                    title="Suppliers" value={stats.totalSuppliers} badge="Active" delay={240}
-                    badgeStyle={{ background: 'var(--color-success-light)', color: 'var(--color-success)' }}
-                    iconBg="linear-gradient(135deg,#D1FAE5,#A7F3D0)" iconColor="#059669"
-                    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+                    title="Categories" value={stats.totalCategories} badge="Active" delay={80}
+                    badgeStyle={{ background: '#ede9fe', color: '#6d28d9' }}
+                    iconBg="linear-gradient(135deg,#818cf8,#6d28d9)"
+                    iconColor="white"
+                    icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>}
                 />
                 <StatCard
-                    title="Inventory Value" value={stats.inventoryValue} badge="Value" delay={320} isValue
-                    badgeStyle={{ background: 'var(--color-info-light)', color: 'var(--color-info)' }}
-                    iconBg="linear-gradient(135deg,#DBEAFE,#BFDBFE)" iconColor="var(--color-primary-600)"
-                    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+                    title="Low Stock Items" value={stats.lowStockCount} badge="Action" delay={160}
+                    badgeStyle={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}
+                    iconBg="linear-gradient(135deg,#f87171,#dc2626)"
+                    iconColor="white"
+                    href="/inventory"
+                    icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>}
+                />
+                <StatCard
+                    title="Suppliers" value={stats.totalSuppliers} badge="Partners" delay={240}
+                    badgeStyle={{ background: '#d1fae5', color: '#065f46' }}
+                    iconBg="linear-gradient(135deg,#34d399,#059669)"
+                    iconColor="white"
+                    icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+                />
+                <StatCard
+                    title="Inventory Value" value={stats.inventoryValue} badge="Est." delay={320} isValue
+                    badgeStyle={{ background: '#e0f2fe', color: '#0369a1' }}
+                    iconBg="linear-gradient(135deg,#38bdf8,#0284c7)"
+                    iconColor="white"
+                    icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
                 />
                 <StatCard
                     title="Transactions" value={stats.monthlyTransactions} badge="This Month" delay={400}
-                    badgeStyle={{ background: 'var(--color-success-light)', color: 'var(--color-success)' }}
-                    iconBg="linear-gradient(135deg,#F3E8FF,#E9D5FF)" iconColor="#7C3AED"
-                    icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>}
+                    badgeStyle={{ background: '#fdf4ff', color: '#a21caf' }}
+                    iconBg="linear-gradient(135deg,#e879f9,#a21caf)"
+                    iconColor="white"
+                    icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>}
                 />
             </div>
 
             {/* ── Charts Row ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 {/* Bar Chart */}
-                <div className="app-card p-6 lg:col-span-2">
-                    <div className="flex items-center justify-between mb-6">
+                <div className="app-card p-5 lg:col-span-2">
+                    <div className="flex items-center justify-between mb-5">
                         <div>
-                            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Stock Movement Overview</h3>
-                            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Monthly stock in vs stock out</p>
+                            <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Stock Movement Overview</h3>
+                            <p className="text-xs" style={{ color: 'var(--text-tertiary)', marginTop: 2 }}>Monthly stock in vs stock out</p>
                         </div>
-                        <div className="flex items-center gap-4 text-xs">
+                        <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
                             <span className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'var(--color-success)' }}></span>
+                                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--color-success)' }}></span>
                                 Stock In
                             </span>
                             <span className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full" style={{ background: 'var(--color-primary-500)' }}></span>
+                                <span className="w-2 h-2 rounded-full" style={{ background: 'var(--color-primary-500)' }}></span>
                                 Stock Out
                             </span>
                         </div>
                     </div>
-                    <div style={{ height: 300 }}>
+                    <div style={{ height: 260 }}>
                         {chartLoading || !barData
-                            ? <SkeletonBlock height={280} />
+                            ? <SkeletonBlock height={240} />
                             : <Bar data={barData} options={barOptions} />
                         }
                     </div>
                 </div>
 
                 {/* Doughnut Chart */}
-                <div className="app-card p-6">
-                    <div className="mb-6">
-                        <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Category Distribution</h3>
-                        <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Products by category</p>
+                <div className="app-card p-5">
+                    <div className="mb-4">
+                        <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Category Distribution</h3>
+                        <p className="text-xs" style={{ color: 'var(--text-tertiary)', marginTop: 2 }}>Products by category</p>
                     </div>
-                    <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {chartLoading || !donutData
-                            ? <SkeletonBlock height={200} radius={9999} />
+                            ? <SkeletonBlock height={180} radius={9999} />
                             : donutData.labels.length === 0
-                                ? <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>No category data</p>
+                                ? <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>No category data</p>
                                 : <Doughnut data={donutData} options={donutOptions} />
                         }
                     </div>
@@ -341,12 +358,12 @@ const Dashboard = () => {
                     {donutData && !chartLoading && (
                         <div className="mt-4 space-y-2">
                             {donutData.labels.map((label, i) => (
-                                <div key={label} className="flex items-center justify-between text-sm">
+                                <div key={label} className="flex items-center justify-between">
                                     <span className="flex items-center gap-2">
-                                        <span className="w-2.5 h-2.5 rounded-full" style={{ background: donutData.datasets[0].backgroundColor[i] }}></span>
-                                        <span style={{ color: 'var(--text-secondary)' }}>{label}</span>
+                                        <span className="w-2 h-2 rounded-full" style={{ background: donutData.datasets[0].backgroundColor[i] }}></span>
+                                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8125rem' }}>{label}</span>
                                     </span>
-                                    <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                    <span style={{ fontWeight: 600, fontSize: '0.8125rem', color: 'var(--text-primary)' }}>
                                         {donutData.datasets[0].data[i]}
                                     </span>
                                 </div>
@@ -357,21 +374,21 @@ const Dashboard = () => {
             </div>
 
             {/* ── Bottom Widgets ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Recent Transactions */}
-                <div className="app-card p-6">
-                    <div className="flex items-center justify-between mb-4">
+                <div className="app-card p-5">
+                    <div className="flex items-center justify-between mb-4 pb-3" style={{ borderBottom: '1px solid var(--border-light)' }}>
                         <div>
-                            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Recent Transactions</h3>
-                            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Latest stock movements</p>
+                            <h3 className="text-base font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>Recent Transactions</h3>
+                            <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>Latest stock movements</p>
                         </div>
-                        <Link to="/transactions" className="text-sm font-medium link-underline" style={{ color: 'var(--color-primary-500)' }}>
+                        <Link to="/transactions" className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all" style={{ color: 'var(--color-primary-500)', background: 'var(--bg-hover)' }}>
                             View All
                         </Link>
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {loading
-                            ? Array(4).fill(0).map((_, i) => <SkeletonBlock key={i} />)
+                            ? Array(4).fill(0).map((_, i) => <SkeletonBlock key={i} height={52} />)
                             : recentTransactions.length === 0
                                 ? (
                                     <div className="empty-state" style={{ padding: '2rem' }}>
@@ -383,20 +400,44 @@ const Dashboard = () => {
                                 )
                                 : recentTransactions.map(txn => {
                                     const tc = TX_TYPE[txn.type] || TX_TYPE.adjustment;
+                                    const isStockIn = txn.type === 'stock_in';
+                                    const isStockOut = txn.type === 'stock_out';
+                                    
+                                    const iconBg = isStockIn 
+                                        ? 'rgba(16, 185, 129, 0.1)' 
+                                        : isStockOut 
+                                            ? 'rgba(59, 130, 246, 0.1)' 
+                                            : 'rgba(245, 158, 11, 0.1)';
+                                    const iconColor = isStockIn 
+                                        ? '#10b981' 
+                                        : isStockOut 
+                                            ? '#3b82f6' 
+                                            : '#f59e0b';
+                                            
                                     return (
-                                        <div key={txn.id} className="flex items-center gap-3 p-3 rounded-xl transition-all" style={{ background: 'var(--bg-hover)' }}>
-                                            <div className="icon-box icon-box-sm" style={{ background: tc.bg, color: tc.text, flexShrink: 0 }}>
-                                                <span style={{ fontSize: 14, fontWeight: 700 }}>{tc.symbol}</span>
+                                        <div key={txn.id} className="flex items-center justify-between py-2 px-3 rounded-xl transition-all duration-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 group">
+                                            <div className="flex items-center gap-3.5 min-w-0">
+                                                <div className="w-9 h-9 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105" style={{ background: iconBg, color: iconColor, flexShrink: 0 }}>
+                                                    {isStockIn && (
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 5v14"/></svg>
+                                                    )}
+                                                    {isStockOut && (
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+                                                    )}
+                                                    {!isStockIn && !isStockOut && (
+                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h6"/><path d="M15 12h6"/></svg>
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold truncate group-hover:text-primary transition-colors" style={{ color: 'var(--text-primary)' }}>
+                                                        {txn.product?.name || 'Unknown Product'}
+                                                    </p>
+                                                    <p className="text-[11px] font-medium" style={{ color: 'var(--text-tertiary)', marginTop: '1px' }}>
+                                                        {tc.label} <span style={{ color: 'var(--text-secondary)' }}>{txn.quantity} units</span>{txn.reference ? ` · ${txn.reference}` : ''}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
-                                                    {txn.product?.name || 'Unknown Product'}
-                                                </p>
-                                                <p className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                                                    {tc.label} {txn.quantity} units{txn.reference ? ` · ${txn.reference}` : ''}
-                                                </p>
-                                            </div>
-                                            <span className="text-xs font-medium" style={{ color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+                                            <span className="text-xs font-normal" style={{ color: 'var(--text-tertiary)', whiteSpace: 'nowrap', marginLeft: '1rem' }}>
                                                 {formatDate(txn.created_at)}
                                             </span>
                                         </div>
@@ -407,19 +448,19 @@ const Dashboard = () => {
                 </div>
 
                 {/* Low Stock Alerts */}
-                <div className="app-card p-6">
-                    <div className="flex items-center justify-between mb-4">
+                <div className="app-card p-5">
+                    <div className="flex items-center justify-between mb-4 pb-3" style={{ borderBottom: '1px solid var(--border-light)' }}>
                         <div>
-                            <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>Low Stock Alerts</h3>
-                            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>Items needing attention</p>
+                            <h3 className="text-sm font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>Low Stock Alerts</h3>
+                            <p className="text-xs" style={{ color: 'var(--text-tertiary)', marginTop: 2 }}>Items needing attention</p>
                         </div>
-                        <Link to="/inventory" className="text-sm font-medium link-underline" style={{ color: 'var(--color-primary-500)' }}>
+                        <Link to="/inventory" className="text-xs font-semibold px-2.5 py-1 rounded-lg transition-all" style={{ color: 'var(--color-primary-500)', background: 'var(--bg-hover)' }}>
                             View All
                         </Link>
                     </div>
                     <div className="space-y-3">
                         {loading
-                            ? Array(4).fill(0).map((_, i) => <SkeletonBlock key={i} />)
+                            ? Array(4).fill(0).map((_, i) => <SkeletonBlock key={i} height={60} />)
                             : lowStockItems.length === 0
                                 ? (
                                     <div className="empty-state" style={{ padding: '2rem' }}>
@@ -431,22 +472,31 @@ const Dashboard = () => {
                                 )
                                 : lowStockItems.map(item => {
                                     const pct = Math.round((item.quantity / Math.max(item.min_stock_level, 1)) * 100);
-                                    const barColor = pct <= 25 ? 'var(--color-danger)' : pct <= 50 ? 'var(--color-warning)' : 'var(--color-primary-500)';
+                                    const isOutOfStock = item.quantity === 0;
+                                    const badgeBg = isOutOfStock ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)';
+                                    const badgeColor = isOutOfStock ? '#ef4444' : '#f59e0b';
+                                    const barColor = isOutOfStock ? '#ef4444' : '#f59e0b';
+                                    
                                     return (
-                                        <div key={item.sku} className="flex items-center gap-3 p-3 rounded-xl transition-all" style={{ background: 'var(--bg-hover)' }}>
-                                            <div className="icon-box icon-box-sm" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)', flexShrink: 0 }}>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{item.name}</p>
-                                                    <span className="text-xs font-semibold ml-2" style={{ color: barColor }}>
+                                        <div key={item.sku} className="py-2.5 px-3 rounded-xl transition-all duration-200 hover:bg-zinc-50 dark:hover:bg-zinc-900/60 group">
+                                            <div className="flex items-center justify-between gap-3 mb-1.5">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className="w-5 h-5 rounded-md flex items-center justify-center" style={{ background: badgeBg, color: badgeColor, flexShrink: 0 }}>
+                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                                    </div>
+                                                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{item.name}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider" style={{ background: badgeBg, color: badgeColor }}>
+                                                        {isOutOfStock ? 'Out of stock' : 'Low stock'}
+                                                    </span>
+                                                    <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
                                                         {item.quantity}/{item.min_stock_level}
                                                     </span>
                                                 </div>
-                                                <div className="w-full h-1.5 rounded-full" style={{ background: 'var(--border-light)' }}>
-                                                    <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(pct, 100)}%`, background: barColor }} />
-                                                </div>
+                                            </div>
+                                            <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-light)' }}>
+                                                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(pct, 100)}%`, background: barColor }} />
                                             </div>
                                         </div>
                                     );

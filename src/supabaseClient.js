@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = 'https://rpybiwuxbqnyaulhayso.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJweWJpd3V4YnFueWF1bGhheXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0OTkxMzgsImV4cCI6MjA5ODA3NTEzOH0.1yfbZWdqScsaEyK0CodjaYP-BGkI-oOJRHo1n38Rvxc';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 let supabase;
-const IS_DEMO_MODE = SUPABASE_URL.includes('your-project-id.supabase.co');
+const IS_DEMO_MODE = !SUPABASE_URL || SUPABASE_URL.includes('your-project-id.supabase.co');
 
 if (IS_DEMO_MODE) {
     console.warn("Using Local Mock Data because Supabase is not configured.");

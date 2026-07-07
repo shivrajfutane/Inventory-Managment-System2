@@ -16,7 +16,9 @@ const Layout = () => {
     });
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [lowStockCount, setLowStockCount] = useState(0);
+    const [notifications, setNotifications] = useState([]);
 
     // Sync sidebar preference
     useEffect(() => {
@@ -29,36 +31,68 @@ const Layout = () => {
         setUserDropdownOpen(false);
     }, [location.pathname]);
 
-    // Fetch low stock alerts for notification count
-    useEffect(() => {
-        const fetchLowStockCount = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('products')
-                    .select('quantity, min_stock_level');
-                if (!error && data) {
-                    const lowStockItems = data.filter(p => p.quantity <= p.min_stock_level);
-                    setLowStockCount(lowStockItems.length);
-                }
-            } catch (err) {
-                console.error('Error fetching low stock count:', err);
+    // Fetch unread notifications count
+    const fetchUnreadNotificationsCount = async () => {
+        try {
+            const { count, error } = await supabase
+                .from('notifications')
+                .select('*', { count: 'exact', head: true })
+                .eq('read', false);
+            if (!error) {
+                setLowStockCount(count || 0);
             }
-        };
+        } catch (err) {
+            console.error('Error fetching notifications count:', err);
+        }
+    };
 
-        fetchLowStockCount();
+    const fetchNotifications = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(5);
+            if (!error && data) {
+                setNotifications(data);
+            }
+        } catch (err) {
+            console.error('Error fetching notifications list:', err);
+        }
+    };
 
-        // Subscribe to product updates
+    const markAllAsRead = async () => {
+        try {
+            const { error } = await supabase
+                .from('notifications')
+                .update({ read: true })
+                .eq('read', false);
+            if (!error) {
+                setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                setLowStockCount(0);
+            }
+        } catch (err) {
+            console.error('Error marking notifications as read:', err);
+        }
+    };
+
+    useEffect(() => {
+        fetchUnreadNotificationsCount();
+
+        // Subscribe to notifications changes
         const channel = supabase
-            .channel('layout-product-changes')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-                fetchLowStockCount();
+            .channel('layout-notification-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => {
+                fetchUnreadNotificationsCount();
+                // Refresh list if dropdown is open
+                if (notificationsOpen) fetchNotifications();
             })
             .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
         };
-    }, []);
+    }, [notificationsOpen]);
 
     const handleLogout = async () => {
         await logout();
@@ -103,17 +137,13 @@ const Layout = () => {
             <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
                 {/* Sidebar Header */}
                 <div className="sidebar-header" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid var(--border-light)' }}>
-                    <div className="icon-box icon-box-md" style={{ background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600))', flexShrink: 0 }}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>
-                        </svg>
-                    </div>
+                    <img src="/logo.png" alt="InventoryPro Logo" style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover', flexShrink: 0 }} />
                     <span className="sidebar-logo-text font-bold text-lg" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>InventoryPro</span>
                 </div>
 
                 {/* Navigation Links */}
                 <nav className="flex-1 overflow-y-auto no-scrollbar" style={{ padding: '0.75rem' }}>
-                    <div style={{ fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', padding: '0.75rem 1rem 0.5rem' }}>Main</div>
+                    <div className="sidebar-section-header">Main</div>
                     
                     <Link to="/" className={navItemClass('/')}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
@@ -134,12 +164,12 @@ const Layout = () => {
                     </Link>
 
                     <Link to="/inventory" className={navItemClass('/inventory')}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
                         <span className="sidebar-text">Inventory</span>
                         {isCollapsed && <span className="tooltip">Inventory</span>}
                     </Link>
 
-                    <div style={{ fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', padding: '1.5rem 1rem 0.5rem' }}>Analytics</div>
+                    <div className="sidebar-section-header">Analytics</div>
 
                     <Link to="/transactions" className={navItemClass('/transactions')}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/></svg>
@@ -153,10 +183,10 @@ const Layout = () => {
                         {isCollapsed && <span className="tooltip">Reports</span>}
                     </Link>
 
-                    <div style={{ fontSize: '0.6875rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-tertiary)', padding: '1.5rem 1rem 0.5rem' }}>System</div>
+                    <div className="sidebar-section-header">System</div>
 
                     <Link to="/settings" className={navItemClass('/settings')}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
                         <span className="sidebar-text">Settings</span>
                         {isCollapsed && <span className="tooltip">Settings</span>}
                     </Link>
@@ -170,13 +200,39 @@ const Layout = () => {
                     )}
                 </nav>
 
-                {/* Collapse Button */}
-                <div style={{ padding: '1rem', borderTop: '1px solid var(--border-light)' }}>
+                {/* Collapse Button + User Footer */}
+                <div style={{ padding: '0.75rem', borderTop: '1px solid var(--border-light)' }}>
+                    {/* User info row */}
+                    {!isCollapsed && (
+                        <Link to="/settings" style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.625rem', borderRadius: 10, textDecoration: 'none', marginBottom: '0.375rem', transition: 'background 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        >
+                            <div style={{
+                                width: 32, height: 32, borderRadius: 8, flexShrink: 0, overflow: 'hidden',
+                                background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700))',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.75rem', fontWeight: 700
+                            }}>
+                                {profile?.avatar_url
+                                    ? <img src={profile.avatar_url} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none'; }} />
+                                    : userInitials
+                                }
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                                <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {profile?.full_name || 'User'}
+                                </p>
+                                <p style={{ fontSize: '0.6875rem', color: 'var(--text-tertiary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {profile?.role ? profile.role.toUpperCase() : 'USER'}
+                                </p>
+                            </div>
+                        </Link>
+                    )}
                     <button onClick={() => setIsCollapsed(!isCollapsed)} className="sidebar-link" style={{ width: '100%' }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s', flexShrink: 0 }}>
                             <path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/>
                         </svg>
-                        <span className="sidebar-text">Collapse</span>
+                        <span className="sidebar-text" style={{ fontSize: '0.8125rem' }}>Collapse</span>
                     </button>
                 </div>
             </aside>
@@ -206,14 +262,81 @@ const Layout = () => {
                         </button>
 
                         {/* Notifications */}
-                        <Link to="/inventory" className="btn btn-ghost btn-sm btn-press relative" data-tooltip="Notifications">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                            {lowStockCount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] font-bold text-white rounded-full flex items-center justify-center" style={{ background: 'var(--color-danger)' }}>
-                                    {lowStockCount}
-                                </span>
+                        <div className="relative">
+                            <button 
+                                onClick={() => {
+                                    setNotificationsOpen(!notificationsOpen);
+                                    if (!notificationsOpen) fetchNotifications();
+                                }} 
+                                className={`btn btn-ghost btn-sm btn-press relative ${lowStockCount > 0 ? 'bell-shake' : ''}`} 
+                                data-tooltip="Notifications"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+                                </svg>
+                                {lowStockCount > 0 && (
+                                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 text-[10px] font-bold text-white rounded-full flex items-center justify-center" style={{ background: 'var(--color-danger)' }}>
+                                        {lowStockCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {notificationsOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-10" onClick={() => setNotificationsOpen(false)}></div>
+                                    <div className="dropdown-menu absolute right-0 top-full mt-2 z-20" style={{ minWidth: '320px', padding: '0' }}>
+                                        <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Notifications</p>
+                                            {lowStockCount > 0 && (
+                                                <button 
+                                                    onClick={markAllAsRead} 
+                                                    style={{ fontSize: '0.75rem', color: 'var(--color-primary-500)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}
+                                                >
+                                                    Mark all read
+                                                </button>
+                                            )}
+                                        </div>
+                                        <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
+                                            {notifications.length === 0 ? (
+                                                <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
+                                                    No notifications
+                                                </div>
+                                            ) : (
+                                                notifications.map(n => (
+                                                    <div 
+                                                        key={n.id} 
+                                                        style={{ 
+                                                            padding: '0.75rem 1rem', 
+                                                            borderBottom: '1px solid var(--border-light)', 
+                                                            background: n.read ? 'transparent' : 'var(--bg-active)',
+                                                            opacity: n.read ? 0.7 : 1,
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                                                            <span style={{ 
+                                                                width: '6px', 
+                                                                height: '6px', 
+                                                                borderRadius: '50%', 
+                                                                background: n.type === 'warning' ? 'var(--color-warning)' : 'var(--color-info)',
+                                                                marginTop: '6px',
+                                                                flexShrink: 0,
+                                                                display: n.read ? 'none' : 'block'
+                                                            }}></span>
+                                                            <div>
+                                                                <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{n.title}</p>
+                                                                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0.125rem 0 0 0', lineHeight: 1.3 }}>{n.message}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
                             )}
-                        </Link>
+                        </div>
 
                         {/* User Menu Dropdown */}
                         <div className="relative">

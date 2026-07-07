@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
-                .single();
+                .maybeSingle();
             if (error) throw error;
             setProfile(data);
         } catch (error) {
@@ -125,13 +125,13 @@ export const AuthProvider = ({ children }) => {
     const updateProfile = async (updates) => {
         try {
             if (!user) throw new Error('Not authenticated');
-            const { data, error } = await supabase
+            const { data: dataList, error } = await supabase
                 .from('profiles')
                 .update(updates)
                 .eq('id', user.id)
-                .select()
-                .single();
+                .select();
             if (error) throw error;
+            const data = dataList?.[0] || null;
             setProfile(data);
             return { success: true, data };
         } catch (error) {
@@ -172,6 +172,59 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const loginWithGoogle = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.origin },
+            });
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('Google login error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    // Send a 6-digit OTP to the given email (magic-link OTP mode)
+    const sendOtp = async (email) => {
+        try {
+            if (!email) return { success: false, error: 'Email is required' };
+            const { error } = await supabase.auth.signInWithOtp({
+                email,
+                options: { shouldCreateUser: true }
+            });
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            console.error('Send OTP error:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
+    // Verify the 6-digit OTP the user received in their email
+    const verifyOtp = async (email, token) => {
+        try {
+            if (!email || !token) return { success: false, error: 'Email and code are required' };
+            const { data, error } = await supabase.auth.verifyOtp({
+                email,
+                token,
+                type: 'email'
+            });
+            if (error) throw error;
+            return { success: true, user: data.user };
+        } catch (error) {
+            console.error('Verify OTP error:', error);
+            if (error.message.toLowerCase().includes('expired')) {
+                return { success: false, error: 'Code expired — please request a new one.' };
+            }
+            if (error.message.toLowerCase().includes('invalid')) {
+                return { success: false, error: 'Incorrect code. Check your email and try again.' };
+            }
+            return { success: false, error: error.message };
+        }
+    };
+
     const refreshProfile = async () => {
         if (user) {
             await fetchProfile(user.id);
@@ -184,6 +237,9 @@ export const AuthProvider = ({ children }) => {
             profile,
             loading,
             login,
+            loginWithGoogle,
+            sendOtp,
+            verifyOtp,
             register,
             logout,
             updateProfile,

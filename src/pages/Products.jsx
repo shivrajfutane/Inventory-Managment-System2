@@ -8,15 +8,15 @@ import { formatCurrency, formatNumber, debounce } from '../utils/helpers';
 const PER_PAGE = 10;
 
 const STATUS_BADGE = {
-    active:       { label: 'Active',       bg: '#dcfce7', color: '#166534' },
-    inactive:     { label: 'Inactive',     bg: '#f1f5f9', color: '#475569' },
-    discontinued: { label: 'Discontinued', bg: '#fee2e2', color: '#991b1b' },
+    active:       { label: 'Active',       bg: '#f0fdf4', color: '#166534' },
+    inactive:     { label: 'Inactive',     bg: '#f4f4f5', color: '#52525b' },
+    discontinued: { label: 'Discontinued', bg: '#fef2f2', color: '#991b1b' },
 };
 
 const STOCK_BADGE = {
-    in_stock:     { label: 'In Stock',     bg: '#dcfce7', color: '#166534' },
-    low_stock:    { label: 'Low Stock',    bg: '#fef9c3', color: '#854d0e' },
-    out_of_stock: { label: 'Out of Stock', bg: '#fee2e2', color: '#991b1b' },
+    in_stock:     { label: 'In Stock',     bg: '#f0fdf4', color: '#166534' },
+    low_stock:    { label: 'Low Stock',    bg: '#fefce8', color: '#854d0e' },
+    out_of_stock: { label: 'Out of Stock', bg: '#fef2f2', color: '#991b1b' },
 };
 
 function getStockStatus(product) {
@@ -34,12 +34,19 @@ const Products = () => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [viewMode, setViewMode] = useState(() => localStorage.getItem('productsView') || 'table');
 
     // Filter state
     const [search, setSearch] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [sortBy, setSortBy] = useState('created_at:desc');
+
+    // Persist view preference
+    const setView = (mode) => {
+        setViewMode(mode);
+        localStorage.setItem('productsView', mode);
+    };
 
     // Fetch categories
     const fetchCategories = useCallback(async () => {
@@ -53,12 +60,20 @@ const Products = () => {
         try {
             const { data, error } = await supabase
                 .from('products')
-                .select('*, categories(name, color), suppliers(name)')
+                .select(`
+                    id, name, sku, description,
+                    quantity, min_stock_level, unit_price, cost_price,
+                    location, image_url, status,
+                    category_id, supplier_id, created_by, created_at, updated_at,
+                    categories(name, color),
+                    suppliers(name)
+                `)
                 .order('created_at', { ascending: false });
             if (error) throw error;
             setAllProducts(data || []);
         } catch (err) {
-            showToast('Error loading products', 'error');
+            console.error('Products fetch error:', err);
+            showToast(`Error loading products: ${err.message || 'Unknown error'}`, 'error');
         } finally {
             setLoading(false);
         }
@@ -128,15 +143,45 @@ const Products = () => {
             {/* Page header */}
             <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                    <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Products</h1>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', margin: 0 }}>Products</h1>
                     <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)', marginTop: '0.25rem' }}>
-                        Manage and track your inventory products
-                        {!loading && <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}> &mdash; {allProducts.length} total</span>}
+                        Manage and track your inventory
+                        {!loading && <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}> — {allProducts.length} items</span>}
                     </p>
                 </div>
-                <Link to="/products/add" className="btn btn-primary btn-sm">
-                    + Add Product
-                </Link>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    {/* View toggle */}
+                    <div style={{ display: 'flex', border: '1px solid var(--border-light)', borderRadius: 8, overflow: 'hidden' }}>
+                        <button
+                            onClick={() => setView('table')}
+                            title="Table view"
+                            style={{
+                                padding: '0.4rem 0.65rem', border: 'none', cursor: 'pointer',
+                                background: viewMode === 'table' ? 'var(--bg-active)' : 'transparent',
+                                color: viewMode === 'table' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                                transition: 'all 0.15s'
+                            }}
+                        >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                        </button>
+                        <button
+                            onClick={() => setView('grid')}
+                            title="Grid view"
+                            style={{
+                                padding: '0.4rem 0.65rem', border: 'none', cursor: 'pointer',
+                                background: viewMode === 'grid' ? 'var(--bg-active)' : 'transparent',
+                                color: viewMode === 'grid' ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                                transition: 'all 0.15s', borderLeft: '1px solid var(--border-light)'
+                            }}
+                        >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        </button>
+                    </div>
+                    <Link to="/products/add" className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Add Product
+                    </Link>
+                </div>
             </div>
 
             {/* Filter bar */}
@@ -188,7 +233,84 @@ const Products = () => {
                 </div>
             </div>
 
-            {/* Table card */}
+            {/* Grid / Table card */}
+            {viewMode === 'grid' ? (
+                <div>
+                    {loading ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+                            {Array(6).fill(0).map((_, i) => (
+                                <div key={i} className="skeleton" style={{ height: 280, borderRadius: 12 }} />
+                            ))}
+                        </div>
+                    ) : filtered.length === 0 ? (
+                        <div style={{ padding: '4rem', textAlign: 'center', background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border-light)' }}>
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: 'var(--text-tertiary)', margin: '0 auto 1rem' }}><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                            <h3 style={{ fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>No products found</h3>
+                            <p style={{ fontSize: '0.875rem', color: 'var(--text-tertiary)' }}>{search || categoryFilter || statusFilter ? 'Try adjusting filters.' : 'Add your first product.'}</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+                                {pageItems.map(product => {
+                                    const stockKey = getStockStatus(product);
+                                    const stock = STOCK_BADGE[stockKey];
+                                    const catColor = product.categories?.color || '#8b5cf6';
+                                    return (
+                                        <div key={product.id} className="app-card hover-lift" style={{ overflow: 'hidden', cursor: 'pointer' }}>
+                                            {/* Image */}
+                                            <div style={{ height: 140, background: 'var(--bg-hover)', overflow: 'hidden', position: 'relative' }}>
+                                                {product.image_url ? (
+                                                    <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                ) : (
+                                                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: 'var(--text-tertiary)' }}><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                                                    </div>
+                                                )}
+                                                <span style={{ position: 'absolute', top: 8, right: 8, fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: 99, background: stock.bg, color: stock.color }}>
+                                                    {stock.label}
+                                                </span>
+                                            </div>
+                                            {/* Info */}
+                                            <div style={{ padding: '0.875rem' }}>
+                                                <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)', margin: '0 0 0.2rem' }}>{product.name}</p>
+                                                <p style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', margin: '0 0 0.6rem' }}>{product.sku}</p>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                                                    <span style={{ fontSize: '0.8125rem', fontWeight: 800, color: 'var(--text-primary)' }}>{formatCurrency(product.unit_price)}</span>
+                                                    <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '0.15rem 0.5rem', borderRadius: 99, background: `${catColor}22`, color: catColor }}>{product.categories?.name || 'Uncategorized'}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '0.375rem' }}>
+                                                    <Link to={`/products/${product.id}`} className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center', display: 'flex' }}>View</Link>
+                                                    <Link to={`/products/edit/${product.id}`} className="btn btn-ghost btn-sm">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                    </Link>
+                                                    <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(product.id, product.name)}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            {/* Grid Pagination */}
+                            {totalPages > 1 && (
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.25rem', marginTop: '1.5rem' }}>
+                                    <button className="pagination-btn" disabled={page === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
+                                    </button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).filter(n => n === 1 || n === totalPages || Math.abs(n - page) <= 1).reduce((acc, n, idx, arr) => {
+                                        if (idx > 0 && n - arr[idx - 1] > 1) acc.push('...');
+                                        acc.push(n); return acc;
+                                    }, []).map((n, i) => n === '...' ? <span key={`d-${i}`} className="pagination-btn" style={{ cursor: 'default' }}>…</span> : <button key={n} className={`pagination-btn ${n === page ? 'active' : ''}`} onClick={() => setCurrentPage(n)}>{n}</button>)}
+                                    <button className="pagination-btn" disabled={page === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            ) : (
             <div className="app-card" style={{ overflow: 'hidden' }}>
                 {loading ? (
                     <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-tertiary)' }}>
@@ -359,6 +481,7 @@ const Products = () => {
                     </>
                 )}
             </div>
+            )}
         </div>
     );
 };

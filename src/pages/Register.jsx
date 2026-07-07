@@ -88,62 +88,72 @@ const Register = () => {
                 </div>
 
                 {/* Register Form */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-8">
+                <div className="bg-white/95 dark:bg-zinc-900/95 border border-zinc-200/50 dark:border-zinc-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 transition-colors">
                     <form onSubmit={handleRegisterSubmit} className="space-y-5">
                         {/* Full Name Field */}
                         <div className="form-group">
-                            <label htmlFor="fullName" className="form-label flex items-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
-                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
-                                </svg>
+                            <label htmlFor="fullName" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                                 Full Name
                             </label>
-                            <input 
-                                type="text" 
-                                id="fullName" 
-                                className="form-input w-full dark:bg-slate-800 dark:border-slate-700" 
-                                placeholder="John Doe"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                required
-                            />
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                </div>
+                                <input 
+                                    type="text" 
+                                    id="fullName" 
+                                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-50/50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-sm" 
+                                    placeholder="John Doe"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         {/* Email Field */}
                         <div className="form-group">
-                            <label htmlFor="email" className="form-label flex items-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
-                                    <rect width="20" height="16" x="2" y="4" rx="2"/>
-                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                                </svg>
+                            <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                                 Email Address
                             </label>
-                            <input 
-                                type="email" 
-                                id="email" 
-                                className="form-input w-full dark:bg-slate-800 dark:border-slate-700" 
-                                placeholder="you@company.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect width="20" height="16" x="2" y="4" rx="2"/>
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                    </svg>
+                                </div>
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-50/50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-sm" 
+                                    placeholder="you@company.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         {/* Password Field */}
                         <div className="form-group">
-                            <label htmlFor="password" className="form-label flex items-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
-                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                                </svg>
+                            <label htmlFor="password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                                 Password
                             </label>
                             <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
+                                </div>
                                 <input 
                                     type={showPassword ? "text" : "password"} 
                                     id="password" 
-                                    className="form-input w-full pr-10 dark:bg-slate-800 dark:border-slate-700" 
+                                    className="w-full pl-10 pr-10 py-2.5 bg-zinc-50/50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-sm" 
                                     placeholder="Min. 6 characters"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -153,7 +163,7 @@ const Register = () => {
                                 <button 
                                     type="button" 
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
                                 >
                                     {!showPassword ? (
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -170,42 +180,46 @@ const Register = () => {
                                     )}
                                 </button>
                             </div>
-                            <p className="form-hint">Password must be at least 6 characters long</p>
+                            <p className="text-[11px] text-zinc-500 mt-1">Password must be at least 6 characters long</p>
                         </div>
 
                         {/* Confirm Password Field */}
                         <div className="form-group">
-                            <label htmlFor="confirmPassword" className="form-label flex items-center gap-2">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
-                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                                </svg>
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                                 Confirm Password
                             </label>
-                            <input 
-                                type="password" 
-                                id="confirmPassword" 
-                                className="form-input w-full dark:bg-slate-800 dark:border-slate-700" 
-                                placeholder="Confirm your password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                required
-                            />
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                    </svg>
+                                </div>
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-50/50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 transition-all text-sm" 
+                                    placeholder="Confirm your password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         {/* Terms Checkbox */}
-                        <label className="flex items-start gap-3 cursor-pointer">
+                        <label className="flex items-start gap-3 cursor-pointer select-none">
                             <input 
                                 type="checkbox" 
                                 id="agreeTerms" 
-                                className="w-4 h-4 mt-0.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500" 
+                                className="w-4 h-4 mt-0.5 rounded border-zinc-300 dark:border-zinc-700 text-violet-600 focus:ring-violet-500/20 focus:ring-offset-0 bg-transparent" 
                                 checked={agreeTerms}
                                 onChange={(e) => setAgreeTerms(e.target.checked)}
                                 required
                             />
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                                I agree to the <a href="#" className="text-primary-600 hover:underline font-medium">Terms of Service</a> and{' '}
-                                <a href="#" className="text-primary-600 hover:underline font-medium">Privacy Policy</a>
+                            <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                                I agree to the <a href="#" className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium">Terms of Service</a> and{' '}
+                                <a href="#" className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium">Privacy Policy</a>
                             </span>
                         </label>
 
@@ -213,13 +227,10 @@ const Register = () => {
                         <button 
                             type="submit" 
                             disabled={isLoading}
-                            className="btn btn-primary w-full btn-press flex items-center justify-center gap-2" 
-                            style={{ padding: '0.875rem' }}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition-all shadow-md shadow-violet-500/10 hover:shadow-lg hover:shadow-violet-500/20 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-sm"
                         >
                             {isLoading && (
-                                <svg className="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeDasharray="31.42" strokeDashoffset="10"/>
-                                </svg>
+                                <svg className="spinner border-2 border-white/30 border-t-white rounded-full w-4 h-4 animate-spin" viewBox="0 0 24 24"></svg>
                             )}
                             <span>{isLoading ? 'Creating account...' : 'Create Account'}</span>
                         </button>
@@ -228,15 +239,15 @@ const Register = () => {
                     {/* Divider */}
                     <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-200 dark:border-slate-700"></div>
+                            <div className="w-full border-t border-zinc-200 dark:border-zinc-800"></div>
                         </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-white dark:bg-slate-900 text-gray-500 dark:text-gray-400">Already have an account?</span>
+                        <div className="relative flex justify-center text-xs">
+                            <span className="px-4 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 transition-colors">Already have an account?</span>
                         </div>
                     </div>
 
                     {/* Login Link */}
-                    <Link to="/login" className="btn btn-secondary w-full text-center block dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700">
+                    <Link to="/login" className="w-full text-center block px-4 py-2.5 border border-zinc-200 dark:border-zinc-800 rounded-xl bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-semibold transition-all text-sm">
                         Sign In Instead
                     </Link>
                 </div>

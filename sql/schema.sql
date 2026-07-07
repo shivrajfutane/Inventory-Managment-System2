@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     avatar_url text,
     phone text,
     role text DEFAULT 'user' CHECK (role IN ('admin', 'manager', 'user')),
+    status text DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
@@ -83,6 +84,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     min_stock_level integer DEFAULT 10 CHECK (min_stock_level >= 0),
     unit_price decimal(10,2) DEFAULT 0.00 CHECK (unit_price >= 0),
     cost_price decimal(10,2) DEFAULT 0.00 CHECK (cost_price >= 0),
+    location text,
     image_url text,
     status text DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'discontinued')),
     created_by uuid REFERENCES public.profiles(id),
@@ -160,16 +162,19 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- PROFILES TABLE POLICIES
 -- Users can view all profiles (needed for created_by references)
+DROP POLICY IF EXISTS "Profiles are viewable by authenticated users" ON public.profiles;
 CREATE POLICY "Profiles are viewable by authenticated users" 
     ON public.profiles FOR SELECT 
     USING (auth.role() = 'authenticated');
 
 -- Users can only update their own profile
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile" 
     ON public.profiles FOR UPDATE 
     USING (auth.uid() = id);
 
 -- Admins can update any profile (e.g., to change roles)
+DROP POLICY IF EXISTS "Admins can update profiles" ON public.profiles;
 CREATE POLICY "Admins can update profiles" 
     ON public.profiles FOR UPDATE 
     USING (
@@ -181,48 +186,87 @@ CREATE POLICY "Admins can update profiles"
 
 -- CATEGORIES TABLE POLICIES
 -- All authenticated users can view categories
+DROP POLICY IF EXISTS "Categories viewable by authenticated users" ON public.categories;
 CREATE POLICY "Categories viewable by authenticated users" 
     ON public.categories FOR SELECT 
     USING (auth.role() = 'authenticated');
 
--- Only admins and managers can insert/update/delete
-CREATE POLICY "Categories manageable by admin/manager" 
-    ON public.categories FOR ALL 
+-- Any authenticated user can insert categories (needed for seeding)
+DROP POLICY IF EXISTS "Categories manageable by admin/manager" ON public.categories;
+DROP POLICY IF EXISTS "Categories insertable by authenticated users" ON public.categories;
+DROP POLICY IF EXISTS "Categories updatable by admin/manager" ON public.categories;
+DROP POLICY IF EXISTS "Categories deletable by admin/manager" ON public.categories;
+CREATE POLICY "Categories insertable by authenticated users"
+    ON public.categories FOR INSERT
+    WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Categories updatable by admin/manager"
+    ON public.categories FOR UPDATE
     USING (
         EXISTS (
-            SELECT 1 FROM public.profiles 
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND role IN ('admin', 'manager')
+        )
+    );
+
+CREATE POLICY "Categories deletable by admin/manager"
+    ON public.categories FOR DELETE
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
             WHERE id = auth.uid() AND role IN ('admin', 'manager')
         )
     );
 
 -- SUPPLIERS TABLE POLICIES
 -- All authenticated users can view suppliers
+DROP POLICY IF EXISTS "Suppliers viewable by authenticated users" ON public.suppliers;
 CREATE POLICY "Suppliers viewable by authenticated users" 
     ON public.suppliers FOR SELECT 
     USING (auth.role() = 'authenticated');
 
--- Only admins and managers can insert/update/delete
-CREATE POLICY "Suppliers manageable by admin/manager" 
-    ON public.suppliers FOR ALL 
+-- Any authenticated user can insert suppliers (needed for seeding)
+DROP POLICY IF EXISTS "Suppliers manageable by admin/manager" ON public.suppliers;
+DROP POLICY IF EXISTS "Suppliers insertable by authenticated users" ON public.suppliers;
+DROP POLICY IF EXISTS "Suppliers updatable by admin/manager" ON public.suppliers;
+DROP POLICY IF EXISTS "Suppliers deletable by admin/manager" ON public.suppliers;
+CREATE POLICY "Suppliers insertable by authenticated users"
+    ON public.suppliers FOR INSERT
+    WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Suppliers updatable by admin/manager"
+    ON public.suppliers FOR UPDATE
     USING (
         EXISTS (
-            SELECT 1 FROM public.profiles 
+            SELECT 1 FROM public.profiles
+            WHERE id = auth.uid() AND role IN ('admin', 'manager')
+        )
+    );
+
+CREATE POLICY "Suppliers deletable by admin/manager"
+    ON public.suppliers FOR DELETE
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
             WHERE id = auth.uid() AND role IN ('admin', 'manager')
         )
     );
 
 -- PRODUCTS TABLE POLICIES
 -- All authenticated users can view products
+DROP POLICY IF EXISTS "Products viewable by authenticated users" ON public.products;
 CREATE POLICY "Products viewable by authenticated users" 
     ON public.products FOR SELECT 
     USING (auth.role() = 'authenticated');
 
 -- All authenticated users can create products
+DROP POLICY IF EXISTS "Products creatable by authenticated users" ON public.products;
 CREATE POLICY "Products creatable by authenticated users" 
     ON public.products FOR INSERT 
     WITH CHECK (auth.role() = 'authenticated');
 
 -- Only admins, managers, or the creator can update products
+DROP POLICY IF EXISTS "Products updatable by admin/manager/creator" ON public.products;
 CREATE POLICY "Products updatable by admin/manager/creator" 
     ON public.products FOR UPDATE 
     USING (
@@ -233,6 +277,7 @@ CREATE POLICY "Products updatable by admin/manager/creator"
     );
 
 -- Only admins and managers can delete products
+DROP POLICY IF EXISTS "Products deletable by admin/manager" ON public.products;
 CREATE POLICY "Products deletable by admin/manager" 
     ON public.products FOR DELETE 
     USING (
@@ -244,21 +289,25 @@ CREATE POLICY "Products deletable by admin/manager"
 
 -- INVENTORY TRANSACTIONS TABLE POLICIES
 -- All authenticated users can view transactions
+DROP POLICY IF EXISTS "Transactions viewable by authenticated users" ON public.inventory_transactions;
 CREATE POLICY "Transactions viewable by authenticated users" 
     ON public.inventory_transactions FOR SELECT 
     USING (auth.role() = 'authenticated');
 
 -- All authenticated users can create transactions
+DROP POLICY IF EXISTS "Transactions creatable by authenticated users" ON public.inventory_transactions;
 CREATE POLICY "Transactions creatable by authenticated users" 
     ON public.inventory_transactions FOR INSERT 
     WITH CHECK (auth.role() = 'authenticated');
 
 -- No updates allowed (audit trail) - transactions are immutable
+DROP POLICY IF EXISTS "Transactions not updatable" ON public.inventory_transactions;
 CREATE POLICY "Transactions not updatable" 
     ON public.inventory_transactions FOR UPDATE 
     USING (false);
 
 -- Only admins can delete (for data cleanup)
+DROP POLICY IF EXISTS "Transactions deletable by admin only" ON public.inventory_transactions;
 CREATE POLICY "Transactions deletable by admin only" 
     ON public.inventory_transactions FOR DELETE 
     USING (
@@ -270,21 +319,43 @@ CREATE POLICY "Transactions deletable by admin only"
 
 -- NOTIFICATIONS TABLE POLICIES
 -- Users can only view their own notifications
+DROP POLICY IF EXISTS "Users view own notifications" ON public.notifications;
 CREATE POLICY "Users view own notifications" 
     ON public.notifications FOR SELECT 
-    USING (auth.uid() = user_id);
+    USING (
+        auth.uid() = user_id 
+        OR (user_id IS NULL AND EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role IN ('admin', 'manager')
+        ))
+    );
 
 -- Users can only update their own notifications (mark as read)
+DROP POLICY IF EXISTS "Users update own notifications" ON public.notifications;
 CREATE POLICY "Users update own notifications" 
     ON public.notifications FOR UPDATE 
-    USING (auth.uid() = user_id);
+    USING (
+        auth.uid() = user_id 
+        OR (user_id IS NULL AND EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role IN ('admin', 'manager')
+        ))
+    );
 
 -- Users can only delete their own notifications
+DROP POLICY IF EXISTS "Users delete own notifications" ON public.notifications;
 CREATE POLICY "Users delete own notifications" 
     ON public.notifications FOR DELETE 
-    USING (auth.uid() = user_id);
+    USING (
+        auth.uid() = user_id 
+        OR (user_id IS NULL AND EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE id = auth.uid() AND role IN ('admin', 'manager')
+        ))
+    );
 
 -- System can create notifications for any user
+DROP POLICY IF EXISTS "Notifications creatable by authenticated users" ON public.notifications;
 CREATE POLICY "Notifications creatable by authenticated users" 
     ON public.notifications FOR INSERT 
     WITH CHECK (auth.role() = 'authenticated');
@@ -323,8 +394,24 @@ CREATE TRIGGER update_products_updated_at
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, role)
-    VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email), 'user');
+    INSERT INTO public.profiles (id, full_name, avatar_url, role)
+    VALUES (
+        NEW.id,
+        COALESCE(
+            NEW.raw_user_meta_data->>'full_name',
+            NEW.raw_user_meta_data->>'name',
+            NEW.email
+        ),
+        COALESCE(
+            NEW.raw_user_meta_data->>'avatar_url',
+            NEW.raw_user_meta_data->>'picture'
+        ),
+        'user'
+    )
+    ON CONFLICT (id) DO UPDATE
+    SET 
+        full_name = EXCLUDED.full_name,
+        avatar_url = COALESCE(profiles.avatar_url, EXCLUDED.avatar_url);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -369,10 +456,12 @@ VALUES ('product-images', 'product-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage RLS policies
+DROP POLICY IF EXISTS "Product images are publicly accessible" ON storage.objects;
 CREATE POLICY "Product images are publicly accessible" 
     ON storage.objects FOR SELECT 
     USING (bucket_id = 'product-images');
 
+DROP POLICY IF EXISTS "Authenticated users can upload product images" ON storage.objects;
 CREATE POLICY "Authenticated users can upload product images" 
     ON storage.objects FOR INSERT 
     WITH CHECK (
@@ -380,6 +469,7 @@ CREATE POLICY "Authenticated users can upload product images"
         AND auth.role() = 'authenticated'
     );
 
+DROP POLICY IF EXISTS "Authenticated users can delete product images" ON storage.objects;
 CREATE POLICY "Authenticated users can delete product images" 
     ON storage.objects FOR DELETE 
     USING (
@@ -459,6 +549,18 @@ ORDER BY month DESC;
 CREATE OR REPLACE VIEW public.low_stock_products AS
 SELECT * FROM public.product_summary
 WHERE stock_status = 'low_stock' OR stock_status = 'out_of_stock';
+
+-- ============================================================
+-- 16. GRANTS AND PERMISSIONS
+-- ============================================================
+-- Ensure all roles have access to tables, views, and sequences in public schema
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres, anon, authenticated, service_role;
 
 -- ============================================================
 -- END OF SCHEMA

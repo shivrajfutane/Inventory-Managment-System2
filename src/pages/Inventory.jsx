@@ -79,8 +79,13 @@ const Inventory = () => {
 
                         const [{ error: tErr }, { error: pErr }] = await Promise.all([
                             supabase.from('inventory_transactions').insert([{
-                                product_id: productId, type, quantity: qty,
-                                notes: notes || null, reference: `ADJ-${Date.now()}`
+                                product_id: productId,
+                                type,
+                                quantity: qty,
+                                previous_stock: prod.quantity,
+                                new_stock: newQty,
+                                notes: notes || null,
+                                reference: `ADJ-${Date.now()}`
                             }]),
                             supabase.from('products').update({ quantity: newQty }).eq('id', productId),
                         ]);
@@ -175,6 +180,7 @@ const Inventory = () => {
                                         <th>Product</th>
                                         <th>Type</th>
                                         <th>Quantity</th>
+                                        <th>Stock Flow</th>
                                         <th>Reference</th>
                                         <th>Notes</th>
                                         <th>Date</th>
@@ -196,6 +202,11 @@ const Inventory = () => {
                                                 </td>
                                                 <td style={{ fontWeight: 700, fontSize: '0.875rem', color: t.type === 'stock_out' ? 'var(--color-danger)' : 'var(--text-primary)' }}>
                                                     {t.type === 'stock_out' ? '-' : '+'}{t.quantity}
+                                                </td>
+                                                <td style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                                                    <span style={{ color: 'var(--text-tertiary)' }}>{t.previous_stock}</span>
+                                                    <span style={{ margin: '0 0.25rem', color: 'var(--text-tertiary)' }}>➔</span>
+                                                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.new_stock}</span>
                                                 </td>
                                                 <td>
                                                     {t.reference
