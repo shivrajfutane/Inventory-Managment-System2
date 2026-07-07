@@ -24,6 +24,12 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        // Track whether the initial session check is still in progress.
+        // This prevents onAuthStateChange (which fires immediately on mount)
+        // from calling setLoading(false) before initAuth finishes, which
+        // would briefly expose user=null and cause a redirect to /login.
+        let initialising = true;
+
         // Get initial session
         const initAuth = async () => {
             try {
@@ -35,15 +41,17 @@ export const AuthProvider = ({ children }) => {
             } catch (error) {
                 console.error('Error getting initial session:', error);
             } finally {
+                initialising = false;
                 setLoading(false);
             }
         };
 
         initAuth();
 
-        // Listen for auth changes
+        // Listen for auth changes (skip during init to avoid race condition)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('Auth state changed:', event);
+            if (initialising) return; // Wait for initAuth to finish first
             if (session?.user) {
                 setUser(session.user);
                 await fetchProfile(session.user.id);

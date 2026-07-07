@@ -91,7 +91,7 @@ const OtpInput = ({ value, onChange, disabled }) => {
 
 /* ── Login page ──────────────────────────────────────────────── */
 export default function Login() {
-    const { sendOtp, verifyOtp, loginWithGoogle, user } = useAuth();
+    const { sendOtp, verifyOtp, loginWithGoogle, user, loading: authLoading } = useAuth();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
@@ -101,7 +101,21 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [cooldown, setCooldown] = useState(0);
 
-    useEffect(() => { if (user) navigate('/dashboard'); }, [user, navigate]);
+    useEffect(() => { if (user) navigate('/dashboard', { replace: true }); }, [user, navigate]);
+
+    // While auth is still resolving, show a neutral spinner so the
+    // login form never flashes for an already-authenticated user.
+    if (authLoading) {
+        return (
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-body, #fafafa)' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" strokeWidth="2.5" strokeLinecap="round"
+                    style={{ animation: 'lspin .8s linear infinite' }}>
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                <style>{`@keyframes lspin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
 
     useEffect(() => {
         if (cooldown <= 0) return;
