@@ -101,7 +101,7 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [cooldown, setCooldown] = useState(0);
 
-    useEffect(() => { if (user) navigate('/'); }, [user, navigate]);
+    useEffect(() => { if (user) navigate('/dashboard'); }, [user, navigate]);
 
     useEffect(() => {
         if (cooldown <= 0) return;
@@ -132,7 +132,7 @@ export default function Login() {
         const res = await verifyOtp(email, clean);
         if (res.success) {
             showToast('Signed in!', 'success');
-            navigate('/');
+            navigate('/dashboard');
         } else {
             showToast(res.error || 'Invalid code', 'error');
             setLoading(false);

@@ -21,6 +21,7 @@ import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminPanel from './pages/AdminPanel';
+import Landing from './pages/Landing';
 
 function App() {
     return (
@@ -31,16 +32,17 @@ function App() {
                         <BrowserRouter>
                             <Routes>
                                 {/* Public Routes */}
+                                <Route path="/" element={<Landing />} />
                                 <Route path="/login" element={<Login />} />
                                 <Route path="/register" element={<Navigate to="/login" replace />} />
 
                                 {/* Protected Routes */}
-                                <Route path="/" element={
+                                <Route element={
                                     <ProtectedRoute>
                                         <Layout />
                                     </ProtectedRoute>
                                 }>
-                                    <Route index element={<Dashboard />} />
+                                    <Route path="dashboard" element={<Dashboard />} />
                                     
                                     <Route path="products" element={<Products />} />
                                     <Route path="products/:id" element={<ProductDetails />} />
